@@ -40,27 +40,31 @@ server <- function(input, output) {
       # ~~~~{    Fortuneo    }~~~~
       
       releve_Fortuneo <- data.frame()
-      for(dir_i in filter(input_data, type == 'text/csv')$datapath){
+      # for(dir_i in filter(input_data, type == 'text/csv')$datapath){
+      for(dir_i in filter(input_data, str_detect(name, 'csv$'))$datapath){
+        
         releve_Fortuneo <- bind_rows(releve_Fortuneo, extraction_Fortuneo(dir_i))
         releve_Fortuneo$Compte <- 'Fortuneo_commun'
       }
       
-      cat('            _ 2')
+      
+      
+      cat('            _ 2\n')
       
       # ~~~~{    mise en forme    }~~~~
       df_identifie <-
         bind_rows(releve_Poste, releve_Fortuneo) %>%
         f_identification(RV$df_identification)
-      
+      cat('            _ 3\n')
       df_resume_trimestre <- f_resume_trimestre(df_identifie)
-      
+      cat('            _ 4\n')
       list_col <- f_couleurs(df_resume_trimestre)
       
       RV$df_identifie <- df_identifie
       RV$df_resume_trimestre <- df_resume_trimestre
       RV$list_col <- list_col
       
-      cat('            _ fin')
+      cat('            _ fin\n')
       
       
     })
@@ -221,6 +225,18 @@ server <- function(input, output) {
   #####               SERVER : Page 2 - Graphiques                 #####
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   
+  # ~~~~{    Mise à jour de la taille du curseur de dates    }~~~~
+  observeEvent(RV$df_identifie, {
+    MIN <- min(RV$df_identifie$Date, na.rm = TRUE)
+    MAX <- max(RV$df_identifie$Date, na.rm = TRUE)
+    updateSliderInput(inputId = 'trimestre_subset', 
+                      min = MIN, 
+                      max = MAX,
+                      value = c(MIN, MAX)
+    )
+  })
+  
+  
   
   output$graph <- renderGirafe({
     
@@ -250,26 +266,34 @@ server <- function(input, output) {
   
   output$clicked_tab <- renderTable({    
     
-    
     cat('clicked tab : 1\n')
     print(giraph_select())
     tab <- NULL
     
     if(input$typeGraph == 'BonbonMiel_tot' & !is.null(giraph_select()))
       tab <- RV$df_identifie %>%
-      filter(classe %in% giraph_select(), !is.na(Debit)) %>%
+      filter(if(giraph_select() == 'NA') is.na(classe) else classe == giraph_select()) %>%
       arrange(desc(Debit)) %>%
       mutate(Date = as.character(Date)) %>%
       select(Date, libelle, Debit, Compte)
     
-    if(input$typeGraph == 'BonbonMiel_trim' & !is.null(giraph_select()))
+    if(input$typeGraph == 'BonbonMiel_trim' & !is.null(giraph_select())){
+      
+      select_classe <- str_extract(giraph_select(), '^[^/]+')
+      
+      # début et fin du trimestre
+      centreTrimestre <- as.Date(str_extract(giraph_select(), '[^/]+$'))
+      deb <- as.Date(paste0(format(centreTrimestre - 30, '%Y-%m-'), 01))
+      fin <- as.Date(paste0(format(centreTrimestre + 60, '%Y-%m-'), 01))
+      cat('deb:', as.character(deb), 'fin:', as.character(fin), '\n')
+      
       tab <- RV$df_identifie %>%
-      filter(classe %in% str_extract(giraph_select(), '^[^/]+'), 
-             trimestre %in% str_extract(giraph_select(), '[^/]+$'), 
-             !is.na(Debit)) %>%
-      arrange(desc(Debit)) %>%
-      mutate(Date = as.character(Date)) %>%
-      select(Date, libelle, Debit, Compte)
+        filter(if(select_classe == 'NA') is.na(classe) else classe == select_classe, 
+               Date >= deb, Date < fin) %>%
+        arrange(desc(Debit)) %>%
+        mutate(Date = as.character(Date)) %>%
+        select(Date, libelle, Debit, Compte)
+    }
     
     cat('            : fin\n')
     
@@ -307,6 +331,7 @@ server <- function(input, output) {
       write.csv2(tab(), file, row.names = FALSE)
     }
   )
+  
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   #####                       SERVER : GOUZOUS                     #####
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #

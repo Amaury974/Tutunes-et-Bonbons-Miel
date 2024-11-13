@@ -16,7 +16,7 @@
 ui <- #page_fluid(
   navbarPage(
     
-    title ='Analyse des relevés de comptes v2',
+    title ='Tutunes et Bonbons Miel',
     
     #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
     #####                   UI : Page 1 - Data IN                    #####
@@ -47,7 +47,7 @@ ui <- #page_fluid(
                
                fileInput(
                  inputId = 'input_identifie',
-                 label = "Relevé de comptes catégorisé",
+                 label = 'Relevé de comptes catégorisé',
                  multiple = FALSE,
                  width = '600px',
                  accept = c("text/csv")
@@ -55,7 +55,7 @@ ui <- #page_fluid(
                
                fileInput(
                  inputId = 'input_resume',
-                 label = "Résumé Trimestriel",
+                 label = 'Résumé Trimestriel',
                  multiple = FALSE,
                  width = '600px',
                  accept = c("text/csv")
@@ -192,11 +192,11 @@ ui <- #page_fluid(
       ),
       
       # plotOutput('graph') 
-      girafeOutput('graph', height = '800px', width = '100%'),
+      girafeOutput('graph', height = '700px', width = '100%'),
       
-      # h3('T ou ?'),
+      h3('Lignes sélectionnées'),
+      hr(),
       tableOutput(outputId = 'clicked_tab'),
-      # h3('ben et alors')
     ),
     
     
