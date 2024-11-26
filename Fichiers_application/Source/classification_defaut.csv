@@ -1,0 +1,150 @@
+"";"super_classe";"classe";"lib_id";"Date"
+"1";"Autre";"divers";"CIUDIN";NA
+"2";"Autre";"divers";"ESSOMO LAUNDRY";NA
+"3";"Autre";"divers";"PCIE";NA
+"4";"Autre";"divers";"PHIE";NA
+"5";"Autre";"divers";"CAUTION";NA
+"6";"Autre";"divers";"LAURA CAPONY";NA
+"7";"Autre";"divers";"TIMBRE FISCAL";NA
+"8";"Retraits";"especes";"RET DAB";NA
+"9";"Retraits";"especes";"RETRAIT";NA
+"10";"Retraits";"cheques";"CHQ";NA
+"11";"Fixes";"abonn.";"EDF";NA
+"12";"Fixes";"abonn.";"PRLV";NA
+"13";"Fixes";"abonn.";"COTISATION TRIMESTRIELLE";NA
+"14";"Fixes";"loyer";"LOYER";NA
+"15";"Fixes";"loyer";"REGIE TARGE";NA
+"16";"Loisir";"resto";"IGLOO";NA
+"17";"Loisir";"resto";"SAPNA";NA
+"18";"Loisir";"resto";"LE CAUDAN";NA
+"19";"Loisir";"resto";"SO THAI";NA
+"20";"Loisir";"resto";"ROYAL FOOD TRADI";NA
+"21";"Loisir";"resto";"MJC MONPLAISIR";NA
+"22";"Loisir";"resto";"FEUILLETTE";NA
+"23";"Loisir";"resto";"PAUL";NA
+"24";"Loisir";"resto";"ZOI KITCHEN";NA
+"25";"Loisir";"resto";"HOUSE PIZZA";NA
+"26";"Loisir";"resto";"LA CARDINALE";NA
+"27";"Loisir";"resto";"SNACK";NA
+"28";"Loisir";"resto";"LYBEYROUTH";NA
+"29";"Loisir";"resto";"LE CAFE POTAGER";NA
+"30";"Loisir";"resto";"RESTAURANT";NA
+"31";"Loisir";"resto";"LA CASCADE GROURM";NA
+"32";"Loisir";"resto";"LE PETIT CREUX";NA
+"33";"Loisir";"resto";"MATTSAM RESTAURA";NA
+"34";"Loisir";"resto";"CARRE JARDIN";NA
+"35";"Loisir";"resto";"MAFATE C";NA
+"36";"Loisir";"resto";"PAPICHULO";NA
+"37";"Loisir";"resto";"THE MERVEILLES";NA
+"38";"Loisir";"resto";"CHEZ LOUNA";NA
+"39";"Loisir";"resto";"TERRE ADELICE";NA
+"40";"Loisir";"resto";"COCHI   CO";NA
+"41";"Loisir";"resto";"VILLA MARTHE";NA
+"42";"Loisir";"resto";"LA CASCADE GOURM";NA
+"43";"Loisir";"resto";"SILVER ONE";NA
+"44";"Loisir";"resto";"ZETTLE__RECUP ET";NA
+"45";"Loisir";"resto";"SUMUP  _DELIS A";NA
+"46";"Loisir";"resto";"A BIS";NA
+"47";"Loisir";"resto";"JOJO";NA
+"48";"Loisir";"resto";"GALERIA RESTAURA";NA
+"49";"Loisir";"resto";"513102 ID TRATTO";NA
+"50";"Loisir";"resto";"O DIVIN PLAISIR";NA
+"51";"Loisir";"resto";"KIWA";NA
+"52";"Loisir";"resto";"KOTOZAFY RANDRIA";NA
+"53";"Loisir";"resto";"QUEEN FR";NA
+"54";"Loisir";"resto";"TART'IN";NA
+"55";"Loisir";"resto";"LE RELAIS KREOL";NA
+"56";"Loisir";"resto";"BACCHUS";NA
+"57";"Loisir";"resto";"LE VIEUX PRESS";NA
+"58";"Loisir";"activite";"CAMPING";NA
+"59";"Loisir";"activite";"AIRBNB";NA
+"60";"Loisir";"activite";"KELONIA";NA
+"61";"Loisir";"activite";"CINEPALME";NA
+"62";"Loisir";"activite";"LABYRINTE CHAMP";NA
+"63";"Loisir";"activite";"CITE DU VOLCAN";NA
+"64";"Loisir";"activite";"MAISON FOLIO";NA
+"65";"Loisir";"activite";"DOMAINE DU CAFE";NA
+"66";"Loisir";"activite";"BILLETTERIE WEB";NA
+"67";"Loisir";"activite";"PLEIN CHAMP";NA
+"68";"Loisir";"activite";"SUMUP _PAYET";NA
+"69";"Lieu";"demenag.";"DOSSIER 244049";NA
+"70";"Lieu";"demenag.";"VIR INST JORANT BACKENSTRASS OUT";NA
+"71";"Lieu";"demenag.";"ECOCARTON";NA
+"72";"Lieu";"demenag.";"VILLE DE LYON";NA
+"73";"Lieu";"demenag.";"SIXT";NA
+"74";"Lieu";"deplac.";"SNCF";NA
+"75";"Lieu";"deplac.";"TRANSDEV";NA
+"76";"Lieu";"deplac.";"TROPIC AUTO";NA
+"77";"Lieu";"deplac.";"ADA LOCATIONS";NA
+"78";"Lieu";"deplac.";"KEOLIS";NA
+"79";"Lieu";"deplac.";"CYCLEXPERTSLYON";NA
+"80";"Lieu";"deplac.";"BIKE24";NA
+"81";"Lieu";"deplac.";"SODIPARC";NA
+"82";"Lieu";"deplac.";"RATP";NA
+"83";"Lieu";"deplac.";"INTER LOCATION";NA
+"84";"Lieu";"deplac.";"VITO";NA
+"85";"Lieu";"deplac.";"EURL DJM SERVICE";NA
+"86";"Lieu";"deplac.";"OLA ENERGY";NA
+"87";"Lieu";"deplac.";"AVION";NA
+"88";"Lieu";"deplac.";"STATION ZAC";NA
+"89";"Lieu";"deplac.";"COOL LOCATION";NA
+"90";"Lieu";"amenag.";"MUJI";NA
+"91";"Lieu";"amenag.";"BRICORAMA";NA
+"92";"Lieu";"amenag.";"RAVATE";NA
+"93";"Lieu";"amenag.";"CONFORAMA";NA
+"94";"Lieu";"amenag.";"IKEA";NA
+"95";"Lieu";"amenag.";"FERMES ET JARDIN";NA
+"96";"Lieu";"amenag.";"FERMES_JARDINS";NA
+"97";"Lieu";"amenag.";"LBD";NA
+"98";"Lieu";"amenag.";"BANIAN TISSUS";NA
+"99";"Lieu";"amenag.";"LA DROGUERIE";NA
+"100";"Lieu";"amenag.";"S CENTER";NA
+"101";"Lieu";"amenag.";"LEROY MER";NA
+"102";"Lieu";"amenag.";"AU MONDE DES ANI";NA
+"103";"Lieu";"amenag.";"MATIN STE CLOTILDE";NA
+"104";"Matos";"vetements";"FRIP ATTITUDE";NA
+"105";"Matos";"vetements";"HETM043";NA
+"106";"Matos";"vetements";"HAV SAINT ANDRE";NA
+"107";"Matos";"vetements";"WWW.LOOM.FR";NA
+"108";"Matos";"equip.";"DECATHLON";NA
+"109";"Matos";"equip.";"AU VIEUX CAMPEUR";NA
+"110";"Matos";"equip.";"AMAZON";NA
+"111";"Matos";"equip.";"BLEU CERISE";NA
+"112";"Matos";"equip.";"MAREBAM PRIMAT";NA
+"113";"Matos";"equip.";"SAS AUTREMENT";NA
+"114";"Matos";"cadeaux";"IL ETAIT UNE FOI";NA
+"115";"Matos";"cadeaux";"ZETTLE__CACAO";NA
+"116";"Matos";"cadeaux";"COBALT";NA
+"117";"Matos";"cadeaux";"LA POSTE";NA
+"118";"Matos";"cadeaux";"CADEAU";NA
+"119";"Matos";"cadeaux";"PEPINIERE GROM";NA
+"120";"Matos";"cadeaux";"EXEMPLAIRE";NA
+"121";"Alim";"bio";"BIOCOOP";NA
+"122";"Alim";"bio";"EPI CENTRE";NA
+"123";"Alim";"bio";"BIOLOCO";NA
+"124";"Alim";"bio";"ALIMENTATION BIO";NA
+"125";"Alim";"bio";"NATURALIA";NA
+"126";"Alim";"bio";"LA PTITE DISTRIB";NA
+"127";"Alim";"bio";"BIO";NA
+"128";"Alim";"general";"E.LECLERC";NA
+"129";"Alim";"general";"ELSA BOULANGER";NA
+"130";"Alim";"general";"INTERMARCHE";NA
+"131";"Alim";"general";"ALDI";NA
+"132";"Alim";"general";"AUCHAN";NA
+"133";"Alim";"general";"CARREFOUR";NA
+"134";"Alim";"general";"RUN MARKET";NA
+"135";"Alim";"general";"SPAR";NA
+"136";"Alim";"general";"MONOP";NA
+"137";"Alim";"general";"ASIA STORE";NA
+"138";"Alim";"general";"L'ALIZEE";NA
+"139";"Alim";"general";"LARBRE A PAINS";NA
+"140";"Alim";"general";"LA CASE A PAINS";NA
+"141";"Alim";"general";"VIVAL";NA
+"142";"Alim";"general";"CASINO";NA
+"143";"Alim";"general";"SAS SEMOI";NA
+"144";"Alim";"general";"DISCASH";NA
+"145";"Alim";"general";"SARL MIAMAX";NA
+"146";"Alim";"general";"PROVANILLE";NA
+"147";"Alim";"general";"DISTR VENISSIEUX";NA
+"148";"Alim";"general";"ARMANNI NADEGE";NA
+"149";"Alim";"general";"AROMA-ZONE";NA
