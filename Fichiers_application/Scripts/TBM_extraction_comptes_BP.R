@@ -24,8 +24,16 @@ extraction_Poste <- function(dir_PDF){
   PDF_1 <- pdf_text(dir_PDF)
   
   Annee <- str_extract(PDF_1, '20\\d{2}')[1]
-  # Annee <- str_extract(dir_PDF, '(?<=_)\\d{4}(?=\\d{4})')
   
+  
+  
+  
+  
+  # str_extract(PDF_1[1], '(?<=Votre identifiant . )\\d+')
+  num <- str_extract(PDF_1[1], '(?<=CCP n° ).+?(?=   )')
+  nom <- str_extract(PDF_1[1], '(?<=(MR )|(MME )).+')
+  intitule <- paste('LBP', nom, num)
+  # Annee <- str_extract(dir_PDF, '(?<=_)\\d{4}(?=\\d{4})')
   # PDF_1[2]
   
   # PDF_1 %>%
@@ -50,7 +58,7 @@ extraction_Poste <- function(dir_PDF){
     str_split('(?=\\s\\d{2}/\\d{2}\\s)')
   
   
- 
+  
   # PDF_3 <- sapply(PDF_2[[1]], str_split, pattern ='(?<=\\d{2}/\\d{2})') %>%
   #   as.data.frame()
   PDF_3 <- PDF_2[[1]] %>%
@@ -59,8 +67,8 @@ extraction_Poste <- function(dir_PDF){
     t() %>%
     as_tibble()
   
-   # print(PDF_3)
-   
+  # print(PDF_3)
+  
   names(PDF_3) <- c('Date', 'reste')
   
   PDF_3 <- PDF_3 %>%
@@ -89,11 +97,6 @@ extraction_Poste <- function(dir_PDF){
     str_remove('\\s') %>%
     as.numeric2()
   
-  
-  
-  
-  
-  
   # PDF_3$Direction <- PDF_3$reste %>%
   #   str_extract('.+(?=\\d,\\d{2})') %>%
   #   str_count('.')
@@ -117,9 +120,8 @@ extraction_Poste <- function(dir_PDF){
   
   PDF_4 <- PDF_3 %>%
     filter(Direction == 'Debit') %>%
-    select(Date, libelle = lib,  Debit = montant) 
-  # %>%
-  #   mutate(dir=dir_PDF)
+    select(Date, libelle = lib,  Debit = montant) %>%
+    mutate(Compte = intitule)
   
 }
 

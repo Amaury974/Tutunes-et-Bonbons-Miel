@@ -30,6 +30,9 @@ extraction_Fortuneo <- function(dir){
   releve$Debit <- -releve$Debit
   releve <- filter(releve, !is.na(Debit))
   
+  releve$Compte <- paste('Fortuneo', str_extract(dir, '\\d+'))
+  
+  releve
 }
 # releve$libelle <- str_replace(releve$libelle, '(\\*)|(\\&)', '_')
 # releve$lib <- str_remove(releve$libelle, '^.+\\d{2}/\\d{2}\\s')

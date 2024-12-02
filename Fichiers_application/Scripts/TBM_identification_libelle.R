@@ -16,7 +16,7 @@
 #####                     Liste des dépenses                     #####
 #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
 
-df_identification <- read.csv2('Source/classification_defaut.csv')
+df_identification <- read.csv2('../Source/classification_defaut.csv')
 
 # # ~~~~{    Classes de dépense par defaut    }~~~~
 # list_classes <- list(

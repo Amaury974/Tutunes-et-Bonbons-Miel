@@ -28,8 +28,12 @@ ui <- #page_fluid(
       value = 'data_selection',
       title = "Selection des données", 
       
-      checkboxInput(inputId = 'auto_save',
-                    label = "sauvegarder automatiquement",
+      #--------------------------------------------------------------------#
+      #####                  __ Mem. Emplacements                      #####
+      #--------------------------------------------------------------------#
+      
+      checkboxInput(inputId = 'mem_loc',
+                    label = "memoriser l'emplacement des fichiers",
                     value = TRUE),
       
       
@@ -41,28 +45,30 @@ ui <- #page_fluid(
       
       fluidRow(
         column(8,
-               fileInput(
-                 inputId = 'input_releves',
+               shinyFilesButton(
+                 'input_releves',
                  label = 'Relevés de compte (plusieurs fichiers .csv ou .pdf)',
+                 title = 'Relevés de compte (plusieurs fichiers .csv ou .pdf)',
                  multiple = TRUE,
-                 width = '600px',
+                 # width = '600px',
                  accept = c("text/csv", 'text/pdf', '.csv', '.pdf')
                ),
                
-               
-               fileInput(
-                 inputId = 'input_identifie',
+               shinyFilesButton(
+                 'input_identifie',
                  label = 'Relevé de comptes catégorisé',
+                 title = 'Relevé de comptes catégorisé',
                  multiple = FALSE,
-                 width = '600px',
+                 # width = '600px',
                  accept = c("text/csv")
                ),
                
-               fileInput(
-                 inputId = 'input_resume',
+               shinyFilesButton(
+                 'input_resume',
                  label = 'Résumé Trimestriel',
+                 title = 'Résumé Trimestriel',
                  multiple = FALSE,
-                 width = '600px',
+                 # width = '600px',
                  accept = c("text/csv")
                )
         ),
@@ -97,7 +103,7 @@ ui <- #page_fluid(
                br(),
                downloadButton(
                  outputId = "download_classif", 
-                 label = "Télécharger fichier d'identification")
+                 label = "Enregistrer fichier d'identification")
                
         ),
         
@@ -113,7 +119,8 @@ ui <- #page_fluid(
         column(6,
                h3('Classification'),
                # ~~~~{    nouvel element de classification    }~~~~
-               p('Nouvel element de classification :'),
+               
+               p(HTML('<p>Nouvel element de classification : <i> <small> laisser super Classe vide pour masquer </small> </i> </p>')), 
                fluidRow(
                  column(8,
                         fluidRow(

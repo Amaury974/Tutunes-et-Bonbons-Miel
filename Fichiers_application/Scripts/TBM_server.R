@@ -13,17 +13,97 @@ server <- function(input, output) {
   
   RV <- reactiveValues(data=NULL)
   RV$df_identification <- df_identification
-  # RV$df_identifie <- df_identifie
-  # RV$df_resume_trimestre <- df_resume_trimestre
-  # RV$list_col <- list_col
+  RV$df_localisation <- df_localisation
   
-  # RV$erreur_nvclassif <- ''
+  if(df_localisation[1,'fichier'] != 'Non_def'){
+    RV$df_identifie <- df_identifie
+    RV$list_col <- f_couleurs(RV$df_resume_trimestre <- f_resume_trimestre(df_identifie))
+  }
   
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   #####                  SERVER : Page 1 - Data IN                 #####
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   
- 
+  #--------------------------------------------------------------------#
+  #####                  __ Mem. Emplacements                      #####
+  #--------------------------------------------------------------------#
+  
+  
+  
+  # ~~~~{    Depuis relevés de comptes    }~~~~
+  observeEvent(input$input_releves,{
+    cat('>> Mem. Emplacements > releves _ 1\n')
+    print(input$input_releves)
+    RV$df_localisation[1, 'fichier'] <- 'releves'
+    RV$df_localisation[1, 'emplacement'] <- paste(input$input_releves$datapath, collapse = '//')
+    cat('                               _ fin\n\n')
+  })
+  
+  # ~~~~{    Depuis catégorisé    }~~~~
+  observeEvent(input$input_identifie,{
+    cat('>> Mem. Emplacements > identifie _ 1\n')
+    
+    # cat('\n\n')
+    # print(input$input_identifie)
+    # cat('\n\n')  
+    # print(length(input$input_identifie))
+    # cat('\n\n')
+    # print(str(input$input_identifie))
+    # cat('\n\n')
+    # is.integer(input$input_identifie)
+    
+    # if (!is.integer(input$input_identifie)){
+      # print(parseFilePaths('.', input$input_identifie))
+      RV$df_localisation[1, 'fichier'] <- 'identifie'
+      RV$df_localisation[1, 'emplacement'] <- input$input_identifie$datapath
+    # }
+    cat('                                 _ fin\n\n')
+  })
+  
+  # ~~~~{    identification download    }~~~~
+  # observeEvent(output$download_classif,{
+  #   cat('sauvegarde id_down _ 1\n')
+  #   print(output$download_classif)
+  #   RV$df_localisation[2, 'fichier'] <- 'identification'
+  #   RV$df_localisation[2, 'emplacement'] <- output$download_classif$datapath
+  #   cat('                   _ fin\n')
+  # })
+  observeEvent( RV$dir_identification_download,{
+    cat('>> Mem. Emplacements > id_down _ 1\n')
+    print(RV$dir_identification_download)
+    RV$df_localisation[2, 'fichier'] <- 'identification'
+    RV$df_localisation[2, 'emplacement'] <- RV$dir_identification_download
+    cat('                               _ fin\n')
+  })
+  
+  
+  # ~~~~{    identification download    }~~~~
+  observeEvent(input$upload_classif,{
+    cat('>> Mem. Emplacements > id_up _ 1\n')
+    print(input$upload_classif)
+    RV$df_localisation[2, 'fichier'] <- 'identification'
+    RV$df_localisation[2, 'emplacement'] <- input$upload_classif$datapath
+    cat('                             _ fin\n\n')
+  })
+  
+  # # ~~~~{    Exportation    }~~~~
+  # output$download_classif <- downloadHandler(
+  #   filename = 'Classification_dépenses.csv',
+  #   content = function(file) {
+  #     cat('>> Download Classif _ 1\n')
+  #     write.csv2(df_identification, file, row.names = FALSE)
+  #   }
+  # )
+  
+  
+  # ~~~~{    Ecriture    }~~~~
+  observeEvent(RV$df_localisation, {
+    cat('>> Mem. Emplacements > ecriture _ 1\n')
+    print(RV$df_localisation)
+    # write.csv2( RV$df_localisation, '../Source/localisation.csv', row.names = FALSE)
+    cat('                                _ fin\n\n')
+  })
+  
   #--------------------------------------------------------------------#
   #####                     __ Importation                         #####
   #--------------------------------------------------------------------#
@@ -31,50 +111,56 @@ server <- function(input, output) {
   # ~~~~{    Depuis relevés de comptes    }~~~~
   observeEvent(
     input$input_releves,{
-      cat('Importation _ 1\n')
+      cat('>> Importation > releves _ 1\n')
       input_data <- input$input_releves
       print(input_data)
       
-      # ~~~~{    Banque Postale    }~~~~
-      releve_Poste <- data.frame()
-      for(dir_i in filter(input_data, type == 'application/pdf')$datapath){
-        releve_Poste <- bind_rows(releve_Poste, extraction_Poste(dir_i))
-        releve_Poste$Compte <- 'BP_Amaury'
-      }
       
-      # ~~~~{    Fortuneo    }~~~~
-      
-      releve_Fortuneo <- data.frame()
-      # for(dir_i in filter(input_data, type == 'text/csv')$datapath){
-      for(dir_i in filter(input_data, str_detect(name, 'csv$'))$datapath){
-        
-        releve_Fortuneo <- bind_rows(releve_Fortuneo, extraction_Fortuneo(dir_i))
-        releve_Fortuneo$Compte <- 'Fortuneo_commun'
-      }
-      
-      
-      
-      cat('            _ 2\n')
-      
-      # ~~~~{    mise en forme    }~~~~
-      df_identifie <-
-        bind_rows(releve_Poste, releve_Fortuneo) %>%
+      df_identifie <- f_diff_extraction(all_dir) %>%
         f_identification(RV$df_identification)
+      
+      # # ~~~~{    Banque Postale    }~~~~
+      # releve_Poste <- data.frame()
+      # for(dir_i in filter(input_data, type == 'application/pdf')$datapath){
+      #   releve_Poste <- bind_rows(releve_Poste, extraction_Poste(dir_i))
+      #   releve_Poste$Compte <- 'BP_Amaury'
+      # }
+      # 
+      # # ~~~~{    Fortuneo    }~~~~
+      # 
+      # releve_Fortuneo <- data.frame()
+      # # for(dir_i in filter(input_data, type == 'text/csv')$datapath){
+      # for(dir_i in filter(input_data, str_detect(name, 'csv$'))$datapath){
+      #   
+      #   releve_Fortuneo <- bind_rows(releve_Fortuneo, extraction_Fortuneo(dir_i))
+      #   releve_Fortuneo$Compte <- 'Fortuneo_commun'
+      # }
+      # 
+      # 
+      # 
+      # cat('               _ 2\n')
+      # 
+      # # ~~~~{    mise en forme    }~~~~
+      # df_identifie <-
+      #   bind_rows(releve_Poste, releve_Fortuneo) %>%
+      #   f_identification(RV$df_identification)
+      
+      
       
       # print(df_identifie)
       # saveRDS(df_identifie, file='D:/apis_/Documents/R/Tutunes et Bonbon Miel/df_identifie.RData')
       
-      cat('            _ 3\n')
+      cat('               _ 3\n')
       
       df_resume_trimestre <- f_resume_trimestre(df_identifie)
-      cat('            _ 4\n')
-      # list_col <- f_couleurs(df_resume_trimestre)
+      cat('               _ 4\n')
+      list_col <- f_couleurs(df_resume_trimestre)
       
       RV$df_identifie <- df_identifie
       RV$df_resume_trimestre <- df_resume_trimestre
-      # RV$list_col <- list_col
+      RV$list_col <- list_col
       
-      cat('            _ fin\n')
+      cat('               _ fin\n\n')
       
       
     })
@@ -83,50 +169,45 @@ server <- function(input, output) {
   # ~~~~{    Depuis catégorisé    }~~~~
   observeEvent(
     input$input_identifie,{
-      cat('Load Cat _ 1\n')
+      cat('>> Importation > Catégories _ 1\n')
       
-      # print(input$input_identifie)
-      df_identifie <- read.csv2(input$input_identifie$datapath)%>%
-        mutate(Date = as.Date(Date))
+      if (length(input$file)){
+        cat('                            _ 2\n')
+        # print(input$input_identifie)
+        df_identifie <- read.csv2(input$input_identifie$datapath)%>%
+          mutate(Date = as.Date(Date))
+        
+        df_resume_trimestre <- f_resume_trimestre(df_identifie)
+        
+        list_col <- f_couleurs(df_resume_trimestre)
+        
+        RV$df_identifie <- df_identifie
+        RV$df_resume_trimestre <- df_resume_trimestre
+        RV$list_col <- list_col
+      }
       
-      df_resume_trimestre <- f_resume_trimestre(df_identifie)
-      
-      # list_col <- f_couleurs(df_resume_trimestre)
-      
-      RV$df_identifie <- df_identifie
-      RV$df_resume_trimestre <- df_resume_trimestre
-      # RV$list_col <- list_col
-      
-      cat('         _ fin\n')
-      
-    })
+      cat('                            _ fin\n\n')
+    }
+  )
   
   # ~~~~{    Depuis résumé    }~~~~
   observeEvent(
     input$input_resume,{
-      cat('Load Res _ 1\n')
+      cat('>> Importation > résumés _ 1\n')
       
       df_resume_trimestre <- read.csv2(input$input_resume$datapath) %>%
         mutate(trimestre = as.Date(trimestre))
       
-      # list_col <- f_couleurs(df_resume_trimestre)
+      list_col <- f_couleurs(df_resume_trimestre)
       
       RV$df_resume_trimestre <- df_resume_trimestre
-      # RV$list_col <- list_col
+      RV$list_col <- list_col
       
-      cat('         _ fin\n')
-      
-    })
+      cat('           _ fin\n\n')
+    }
+  )
   
   
-  observeEvent(RV$df_resume_trimestre,{
-    cat('sauvegarde _ 1\n')
-    RV$list_col <- f_couleurs(df_resume_trimestre)
-    
-    if(auto_save)
-      save(df_identifie, df_resume_trimestre, list_col, file = 'dernier_ouvert.RData')
-    cat('           _ fin\n')
-  })
   
   #--------------------------------------------------------------------#
   #####                     __ Identification                      #####
@@ -137,10 +218,10 @@ server <- function(input, output) {
   # ~~~~{    Importation    }~~~~
   observeEvent(
     input$upload_classif,{
-      cat('Upload Classif _ 1\n')
+      cat('>> Identification > Upload Classif _ 1\n')
       df_identification <<- read.csv2(input$upload_classif$datapath)
       RV$df_identification <- df_identification
-      cat('         _ fin\n')
+      cat('            _ fin\n\n')
       
     })
   
@@ -148,6 +229,8 @@ server <- function(input, output) {
   output$download_classif <- downloadHandler(
     filename = 'Classification_dépenses.csv',
     content = function(file) {
+      cat('>> Identification > Download Classif _ 1\n')
+      RV$dir_identification_download <- file
       write.csv2(df_identification, file, row.names = FALSE)
     }
   )
@@ -156,27 +239,28 @@ server <- function(input, output) {
   
   # ~~~~{    MaJ    }~~~~
   observeEvent(input$MaJ_classe, {
-    cat('MaJ classe _ 1\n')
+    cat('>> Identification > MaJ classe _ 1\n')
     
-    if(!any(c(input$nv_supClasse, input$nv_Classe, input$nv_Marq) == '')){
-      cat('           _ 2\n')   
+    if(input$nv_Marq != ''){
+      cat('              _ 2\n')
       
       # !length(as.Date(character(0)))
       
       
-      print(input$nv_Date)
+      # print(input$nv_Date)
       
       Nv_ligne <-data.frame(super_classe = input$nv_supClasse,
                             classe = input$nv_Classe,
                             lib_id = toupper(input$nv_Marq),
                             Date = if(length(input$nv_Date)) input$nv_Date else NA)
+      cat("                ajout d'une ligne :")
       print(Nv_ligne)
       
       df_identification <<- bind_rows(df_identification, Nv_ligne)
     }
     
     
-    cat('           _ 3\n')   
+    cat('              _ 3\n')   
     
     # ~~~~{    On ré-identifie tout    }~~~~
     df_identifie <- RV$df_identifie %>%
@@ -197,12 +281,12 @@ server <- function(input, output) {
     RV$list_col <- list_col
     
     # ~~~~{    Reset des champs    }~~~~
-    cat('           _ 4\n')
+    cat('              _ 4\n')
     updateTextInput(inputId = 'nv_Marq', value = '')
-    updateDateInput(inputId = 'Date', value = as.Date(character(0)))
+    updateDateInput(inputId = 'nv_Date', value = as.Date(character(0)))
     
     
-    cat('           _ fin\n')   
+    cat('              _ fin\n\n')   
     
   })
   
@@ -211,20 +295,22 @@ server <- function(input, output) {
   # output$tab_classif <- renderTable(arrange(RV$df_identification, super_classe, classe))
   
   output$tab_classif <- renderDT(
-    mutate(RV$df_identification,
-           classe = as.factor(classe),
-           super_classe = as.factor(super_classe)),
+    {
+      cat('>> Identification > render DT _ 1\n')
+      mutate(RV$df_identification,
+             classe = as.factor(classe),
+             super_classe = as.factor(super_classe))},
     selection = 'none',
     # editable = 'row',
     filter = 'top',
     # server = FALSE,
-
+    
     options = list(
       pageLength = 40,
       autoWidth = TRUE,
       ordering = TRUE
     ),
-
+    
   )
   # 
   # observeEvent(input$tab_classif_cell_edit, {
@@ -235,7 +321,7 @@ server <- function(input, output) {
   
   # ~~~~{    Tab non assignés    }~~~~
   output$tab_nonIdentifies <- renderTable({
-    cat('non identifiés _1\n')
+    cat('>> Identification > non identifiés _ 1\n')
     # print(RV$df_identifie)
     # print(!is.null(RV$df_identifie))
     tab <- NULL
@@ -251,12 +337,14 @@ server <- function(input, output) {
     
   })
   
-  # ~~~~{    message d'erreur    }~~~~
+  # ~~~~{    message    }~~~~
   R_double_identification <- reactive(double_identification)
+  
   output$erreur_id <- renderText({
-    cat('msg erreur\n')
+    cat('>> Identification > msg erreur\n')
     print(R_double_identification())
-    R_double_identification()})
+    R_double_identification()
+  })
   
   
   
@@ -302,13 +390,13 @@ server <- function(input, output) {
   })
   
   giraph_select <- reactive({
-    cat('clicked\n')
+    cat('>> Graphiques > clicked\n')
     input$graph_selected
   })
   
   output$clicked_tab <- renderTable({    
     
-    cat('clicked tab : 1\n')
+    cat('>> Graphiques > clicked tab _ 1\n')
     print(giraph_select())
     tab <- NULL
     
@@ -337,7 +425,7 @@ server <- function(input, output) {
         select(Date, libelle, Debit, Compte)
     }
     
-    cat('            : fin\n')
+    cat('                         _ fin\n\n')
     
     tab
   })

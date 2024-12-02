@@ -9,7 +9,7 @@
 # encoding UTF8
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
 # rm(list=ls()); gc() ; options(warn = 1)
-# setwd('D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Git Tutunes et Bonbon Miel/Fichiers_application')
+# setwd('D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Git Tutunes et Bonbon Miel/Fichiers_application/Scripts')
 
 
 #,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#
@@ -27,17 +27,17 @@
 # ~~~~{    chargement des packages    }~~~~
 
 needed_packages <- c(#'Rtools', # utilisé par certains packages
-                     'dplyr', # manipulation de données / tableaux
-                     'stringr', # manipulation de chaines de caractères
-                     'pdftools', #lecture de pdf : relevés de compte banque postale
-                     'tidyr', # manipulation de données / tableaux
-                     'ggplot2', # graphiques
-                     'colorspace', #nuances de couleurs au sein des super classes
-                     'ggiraph', # interactivité des graphiques
-                     'shiny', # application
-                     'DT' # tableaux interactifs, modifiables
+  'dplyr', # manipulation de données / tableaux
+  'stringr', # manipulation de chaines de caractères
+  'pdftools', #lecture de pdf : relevés de compte banque postale
+  'tidyr', # manipulation de données / tableaux
+  'ggplot2', # graphiques
+  'colorspace', #nuances de couleurs au sein des super classes
+  'ggiraph', # interactivité des graphiques
+  'shiny', # application
+  'DT', # tableaux interactifs, modifiables
+  'shinyFiles' # chargement des fichiers non securisé mais laissant une trace de l'emplacement
 )
-
 
 
 install.packages(setdiff(needed_packages, rownames(installed.packages())))
@@ -56,36 +56,23 @@ theme_set(theme_light()) ; options(ggplot2.continuous.colour="viridis", ggplot2.
 
 
 # ~~~~{    chargement des fonctions    }~~~~
-# print(getwd())
-source('Scripts/TBM_extraction_comptes_BP.R')
-source('Scripts/TBM_extraction_comptes_Fortuneo.R')
-source('Scripts/TBM_identification_libelle.R')
-source('Scripts/TBM_manipulation_tableaux.R')
-source('Scripts/TBM_graph.R')
-source('Scripts/TBM_util.R')
-source('Scripts/GOUZOU.R')
+print(getwd())
+# setwd('Scripts')
+source('TBM_diff_extraction.R')
+source('TBM_extraction_comptes_BP.R')
+source('TBM_extraction_comptes_Fortuneo.R')
+source('TBM_identification_libelle.R')
+source('TBM_manipulation_tableaux.R')
+source('TBM_graph.R')
+source('TBM_util.R')
+source('GOUZOU.R') # Gouzou_showoff()
 
-# Gouzou_showoff()
+# ~~~~{    chargement des elements de l'application    }~~~~
+source('TBM_ui.R')
+source('TBM_server.R')
+source('TBM_sources.R')
 
-
-source('Scripts/TBM_ui.R')
-source('Scripts/TBM_server.R')
-
-
-
-# fichiers_dispo <- list.files('Source')
-
-
-# df_identifie
-# df_resume_trimestre
-# list_col
-# if('dernier_ouvert.RData' %in% fichiers_dispo) load('source/dernier_ouvert.RData') else load('source/data_vide.RData')
-
-
-
-# df_identification <- read.csv2('Source/classification_defaut.csv')
-
-
+# ~~~~{    chargement de l'application    }~~~~
 shinyApp(ui = ui, server = server)
 
 

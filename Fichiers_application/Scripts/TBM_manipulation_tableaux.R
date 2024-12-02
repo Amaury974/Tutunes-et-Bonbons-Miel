@@ -26,7 +26,7 @@ f_resume_trimestre <- function(df_identifie){
 # ~~~~{    Summarize    }~~~~
 
   # print(df_identifie)
-  df_identifie <- filter(df_identifie, (super_classe != 'transferts' | is.na(super_classe)))
+  df_identifie <- filter(df_identifie, (super_classe != '' | is.na(super_classe)))
   
 resume_trim <- df_identifie %>%
   mutate(trimestre = ceiling(as.numeric(format(Date, '%m'))/3),
