@@ -16,7 +16,7 @@
 #####                     Liste des dépenses                     #####
 #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
 
-df_identification <- read.csv2('../Source/classification_defaut.csv')
+df_classif <- read.csv2('../Source/classification_defaut.csv')
 
 # # ~~~~{    Classes de dépense par defaut    }~~~~
 # list_classes <- list(
@@ -52,10 +52,10 @@ df_identification <- read.csv2('../Source/classification_defaut.csv')
 # 
 # # ~~~~{    Agrégation des classes    }~~~~
 # 
-# df_identification <- data.frame()
+# df_classif <- data.frame()
 # for(i in names(list_classes)){
 #   vec_i <- list_classes[[i]]
-#   df_identification <- 
+#   df_classif <- 
 #     data.frame(super_classe = str_extract(i, '^[^_]+'),
 #                classe = i,
 #                lib_id = toupper(vec_i),
@@ -70,10 +70,10 @@ df_identification <- read.csv2('../Source/classification_defaut.csv')
 #   #                # lib_nice = vec_i,
 #                  
 #     ) %>%
-#     bind_rows(df_identification)
+#     bind_rows(df_classif)
 # }
 # 
-# # df_identification <- df_identification[nrow(df_identification):1,]
+# # df_classif <- df_classif[nrow(df_classif):1,]
 # 
 # 
 # 
@@ -93,26 +93,26 @@ df_identification <- read.csv2('../Source/classification_defaut.csv')
 # # releve[(releve$libelle == 'VIR Virement avec Fortuneo Compt' & releve$Debit ==2000), c('lib_id')] <- 'AVION'
 # # 
 # 
-# df_identification <- bind_rows(df_identification,
+# df_classif <- bind_rows(df_classif,
 #                                data.frame(super_classe = 'lieu',
 #                                           classe = 'lieu_deplac.',
 #                                           lib_id = toupper('VIR Virement avec Fortuneo Compt'),
 #                                           Date = as.Date('2024-07-20')))
 # 
 # 
-# df_identification$classe <- str_extract(df_identification$classe,'[^_]+$')
-# df_identification$classe <- str_to_lower(df_identification$classe)
-# df_identification$super_classe <- str_to_title(df_identification$super_classe)
-# write.csv2(df_identification, 'classification_default.csv')
+# df_classif$classe <- str_extract(df_classif$classe,'[^_]+$')
+# df_classif$classe <- str_to_lower(df_classif$classe)
+# df_classif$super_classe <- str_to_title(df_classif$super_classe)
+# write.csv2(df_classif, 'classification_default.csv')
 
 
 
-f_identification <- function(releve, df_identification){
+fun_classif <- function(releve, df_classif){
   
   
   # print(releve)
   
-  df_identification <- rename(df_identification, Date_id = Date)
+  df_classif <- rename(df_classif, Date_id = Date)
   
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   #####                        Identification                      #####
@@ -125,7 +125,7 @@ f_identification <- function(releve, df_identification){
   # releve2=releve 
   
   # ~~~~{    identification generale    }~~~~
-  df_id_general <- filter(df_identification, is.na(Date_id)) 
+  df_id_general <- filter(df_classif, is.na(Date_id)) 
   # releve$lib_id <- str_extract(toupper(releve$libelle), paste0('(',df_id_general$lib_id,')', collapse = '|'))
   
   tab_id <- releve
@@ -140,7 +140,7 @@ f_identification <- function(releve, df_identification){
   # ~~~~{    identification des exceptions    }~~~~
   # on ne compare que les libbllés avec les bonnes dates
   
-  df_id_exception <- filter(df_identification, !is.na(Date_id))
+  df_id_exception <- filter(df_classif, !is.na(Date_id))
   
   i=356
   for(i in (0:nrow(df_id_exception))[-1]){
@@ -155,8 +155,8 @@ f_identification <- function(releve, df_identification){
   # tab_id2 <- data.frame()
   # i=72
   for(i in 1:nrow(tab_id)){
-    X <- tab_id[i, df_identification$lib_id]
-    X2 <- df_identification[!is.na(X), ]
+    X <- tab_id[i, df_classif$lib_id]
+    X2 <- df_classif[!is.na(X), ]
     
     X2 <- distinct(X2, super_classe, classe, Date_id, .keep_all = TRUE) %>%
       arrange(Date_id)
@@ -195,10 +195,10 @@ f_identification <- function(releve, df_identification){
   # ~~~~{    Jointure des classes de dépense    }~~~~
   
   # df_identifie <- releve %>%
-  #   left_join(df_identification, by = join_by(lib_id))
+  #   left_join(df_classif, by = join_by(lib_id))
   
   releve
   # # ~~~~{    Ménage    }~~~~
-  # rm(list = c('releve', 'releve_Poste', 'releve_Fortuneo', 'list_classes', 'df_identification'))
+  # rm(list = c('releve', 'releve_Poste', 'releve_Fortuneo', 'list_classes', 'df_classif'))
   
 }

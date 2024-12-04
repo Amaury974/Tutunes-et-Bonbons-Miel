@@ -11,7 +11,7 @@
 
 
 
-extraction_Fortuneo <- function(dir){
+extraction_Fortuneo <- function(dir, .force_compte = NULL){
   # ~~~~{    Importation    }~~~~
   
   releve <- read.csv2(dir, header=T, encoding = 'utf-8')
@@ -30,7 +30,7 @@ extraction_Fortuneo <- function(dir){
   releve$Debit <- -releve$Debit
   releve <- filter(releve, !is.na(Debit))
   
-  releve$Compte <- paste('Fortuneo', str_extract(dir, '\\d+'))
+  releve$Compte <- if(!is.null(.force_compte)) .force_compte else paste('Fortuneo', str_extract(dir, '\\d+'))
   
   releve
 }
