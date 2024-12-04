@@ -38,8 +38,8 @@ ui <- #page_fluid(
                             icon = icon('floppy-disk'))
         ),
         column(5,
-               checkboxInput(inputId = 'mem_loc',
-                             label = "memoriser l'emplacement des fichiers",
+               checkboxInput(inputId = 'sauv_auto',
+                             label = "sauvegarde automatique tte les 5mn (non implémenté)",
                              value = TRUE),
         )
       ),

@@ -75,47 +75,16 @@ all_dir <- loca_dossier(dir_data,'\\d{7}')
 releve <- f_diff_extraction(all_dir)
 
 
-
-
-# # ~~~~{    Banque Postale    }~~~~
-# 
-# dir_Poste <- loca_dossier('.', 'releve_CCP2006014Y038')
-# 
-# 
-# 
-# # dir = 'releve_CCP2006014Y038_20240112.pdf'
-# 
-# releve_Poste <- data.frame()
-# for(dir in dir_Poste)
-#   releve_Poste <- bind_rows(releve_Poste, extraction_Poste(dir))
-# 
-# releve_Poste$Compte <- 'BP_Amaury'
-# 
-# 
-# # ~~~~{    Fortuneo    }~~~~
-# 
-# dir_Fortuneo <- loca_dossier('.', 'HistoriqueOperations_018720443542')
-# 
-# releve_Fortuneo <- data.frame()
-# for(dir in dir_Fortuneo)
-#   releve_Fortuneo <- bind_rows(releve_Fortuneo, extraction_Fortuneo(dir))
-# 
-# releve_Fortuneo$Compte <- 'Fortuneo_commun'
-# 
-# 
-# # ~~~~{    Jointure    }~~~~
-# 
-# releve <- bind_rows(releve_Poste, releve_Fortuneo)
-
-
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####            Init. Classification des dépenses            #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
 setwd(dir_data)
-df_identification <- read.csv2('Classification_dépenses.csv')
+df_classif <- read.csv2('Classification_dépenses.csv')
 
-df_identifie <- f_identification(releve, df_identification)
+
+
+df_identifie <- fun_classif(releve, df_classif)
 
 
 setwd(dir_data)

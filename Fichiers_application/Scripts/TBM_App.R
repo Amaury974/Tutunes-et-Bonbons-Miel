@@ -11,7 +11,7 @@
 # rm(list=ls()); gc() ; options(warn = 1)
 # setwd('D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Git Tutunes et Bonbon Miel/Fichiers_application/Scripts')
 
-
+ 
 #,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#
 #************************************************************************************#
 
@@ -72,7 +72,7 @@ source('TBM_ui.R')
 source('TBM_server.R')
 # source('TBM_sources.R')
 
-setwd('../Source')
+# setwd('../Source')
 
 # ~~~~{    chargement de l'application    }~~~~
 shinyApp(ui = ui, server = server)

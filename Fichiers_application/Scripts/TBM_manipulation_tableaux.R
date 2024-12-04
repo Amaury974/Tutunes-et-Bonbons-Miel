@@ -36,17 +36,16 @@ f_resume_trimestre <- function(df_identifie){
   # ~~~~{    Summarize    }~~~~
   
   # print(df_identifie)
-  df_identifie <- filter(df_identifie, (super_classe != '' | is.na(super_classe)))
+  df_identifie2 <- filter(df_identifie, (super_classe != '' | is.na(super_classe))) %>%
+    mutate(classe = str_c(super_classe, '_', classe))
   
-  resume_trim <- df_identifie %>%
+  resume_trim <- df_identifie2 %>%
     mutate(trimestre = ceiling(as.numeric(format(Date, '%m'))/3),
            trimestre = as.Date(paste(format(Date, '%Y'),3*trimestre-1, '15', sep='-'))) %>%
     group_by(super_classe, classe, trimestre) %>%
     summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
     ungroup()
-  
-  
-  
+
   # ~~~~{    Toutes les classes représentées tous les trimestres    }~~~~
   resume_trim <- expand.grid(classe = unique(resume_trim$classe),
                              trimestre = unique(resume_trim$trimestre)) %>%
@@ -54,7 +53,7 @@ f_resume_trimestre <- function(df_identifie){
            Debit = 0) %>%
     bind_rows(resume_trim) %>%
     arrange(desc(Debit)) %>%
-    distinct(classe,trimestre, .keep_all = TRUE)
+    distinct(classe, trimestre, .keep_all = TRUE)
   
   
   
@@ -91,6 +90,7 @@ f_resume_trimestre <- function(df_identifie){
     left_join(resume_trim, by = join_by(super_classe, classe)) %>%  # + Debit, trimestres
     arrange(ordre_sup, ordre_inf) %>%
     mutate(super_classe = factor(super_classe, unique(super_classe)),
+           classe = str_extract(classe,'[^_]+$'), # on retire la super classe de la classe
            classe = factor(classe, unique(classe))) %>%
     select(super_classe, classe, trimestre, Debit, Label_Trimestre)
   
@@ -113,8 +113,8 @@ f_couleurs <- function(df_resume_trimestre){
                                            palette = "Dark 3"))
   
   df_couleur <- df_resume_trimestre %>%
-    select(super_classe, classe) %>%
-    distinct() %>%
+    distinct(super_classe, classe) %>%
+    # distinct() %>%
     left_join(df_sup_col, by = join_by(super_classe)) 
   
   
@@ -140,14 +140,20 @@ f_couleurs <- function(df_resume_trimestre){
   
   list_col <- list()
   i=1
+  for(i in 1:nrow(df_sup_col))
+    list_col[[as.character(df_sup_col[i,'super_classe'])]] <- darken(df_sup_col[i,'super_col'])
+  
   for(i in 1:nrow(df_couleur))
     list_col[[as.character(df_couleur[i,'classe'])]] <- df_couleur[i,'col']
   
   
   
   # # ~~~~{    test    }~~~~
-  # ggplot(df_couleur) +
+  # df_resume_trimestre %>%
+  #   distinct(super_classe, classe) %>%
+  #   ggplot() +
   #   geom_bar(aes(x=classe, fill = classe), y=1) +
+  #   geom_bar(aes(x=classe, fill = super_classe, y=0.3),stat = 'identity', color = 'black')+
   #   scale_fill_manual(values = list_col) +
   #   guides(fill='none') +
   #   theme(axis.text.x = element_text(angle = (330), hjust=0))

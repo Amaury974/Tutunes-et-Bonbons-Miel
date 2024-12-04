@@ -11,10 +11,13 @@ double_identification <- ''
 
 server <- function(input, output) {
   
+  setwd('../Source')
+  print(getwd())
+  
   RV <- reactiveValues(data=NULL)
   RV$df_classif <- df_classif
   
-  
+  print(list.files())
   if('save.RDS' %in% list.files()) {
     cat('>> Initialisation > chargement sauvegarde\n\n')
     
@@ -34,7 +37,7 @@ server <- function(input, output) {
   
   observeEvent(input$save, {
     cat('>> Sauvegarde\n\n')
-    saveRDS(list(df_classif=RV$df_classif, df_identifie=RV$df_identifie, df_resume_trimestre=RV$df_resume_trimestre, list_col=RV$list_col), 'save.RData')
+    saveRDS(list(df_classif=RV$df_classif, df_identifie=RV$df_identifie, df_resume_trimestre=RV$df_resume_trimestre, list_col=RV$list_col), 'save.RDS')
   })
   
   #--------------------------------------------------------------------#
@@ -119,7 +122,9 @@ server <- function(input, output) {
   observeEvent(
     input$upload_classif,{
       cat('>> Identification > Upload Classif _ 1\n')
-      df_classif <<- read.csv2(input$upload_classif$datapath)
+      df_classif <<- read.csv2(input$upload_classif$datapath) %>%
+        mutate(Date = as.Date(Date))
+      
       RV$df_classif <- df_classif
       cat('                                   _ fin\n\n')
       
@@ -227,7 +232,7 @@ server <- function(input, output) {
       tab <- RV$df_identifie %>%
         filter(is.na(lib_id), !is.na(Debit)) %>%
         arrange(desc(Debit)) %>%
-        mutate(Date = as.character(Date)) %>%
+        mutate(Date = format(Date, '%d/%m/%Y')) %>%
         select(Date, libelle, Debit, Compte)
     }
     
@@ -264,8 +269,10 @@ server <- function(input, output) {
   })
   
   
-  
+  # ~~~~{    Graphique    }~~~~
   output$graph <- renderGirafe({
+    cat('>> Graphiques > graphique _ 1\n')
+    cat('      ', input$typeGraph, '\n')
     
     df_resume <- filter(RV$df_resume_trimestre,
                         trimestre >= input$trimestre_subset[1],
@@ -276,16 +283,18 @@ server <- function(input, output) {
     if(input$typeGraph == 'BonbonMiel_tot')
       plot <- BonbonMiel_unique_giraph(df_resume, RV$list_col)
     
+    
     if(input$typeGraph == 'BonbonMiel_trim')
       plot <- BonbonMiel_trimestriel_giraph(df_resume, RV$list_col)
     
     if(input$typeGraph == 'courbe')
       plot <- Courbe_empile_giraph(df_resume, RV$list_col)
     
-    
+    cat('                          _ fin\n\n')
     plot
   })
   
+  # ~~~~{    Réaction au click : affichage des données    }~~~~
   giraph_select <- reactive({
     cat('>> Graphiques > clicked\n')
     input$graph_selected
@@ -297,25 +306,54 @@ server <- function(input, output) {
     print(giraph_select())
     tab <- NULL
     
+    
+    # if(!is.null(giraph_select())){
+    #   
+    #   tab <- RV$df_identifie %>%
+    #     filter(if(giraph_select() == 'NA') is.na(classe) else classe == giraph_select() | super_classe == giraph_select()) %>%
+    #     arrange(desc(Debit)) %>%
+    #     mutate(Date = as.character(Date)) %>%
+    #     select(Date, libelle, Debit, Compte)
+    #   
+    #   if(input$typeGraph == 'BonbonMiel_trim'){
+    #     
+    #     select_classe <- str_extract(giraph_select(), '^[^/]+')
+    #     
+    #     # début et fin du trimestre
+    #     centreTrimestre <- as.Date(str_extract(giraph_select(), '[^/]+$'))
+    #     deb <- as.Date(paste0(format(centreTrimestre - 30, '%Y-%m-'), 01))
+    #     fin <- as.Date(paste0(format(centreTrimestre + 60, '%Y-%m-'), 01))
+    #     cat('deb:', as.character(deb), 'fin:', as.character(fin), '\n')
+    #     
+    #     tab <- tab %>%
+    #       filter(Date >= deb, Date < fin) %>%
+    #       arrange(desc(Debit)) %>%
+    #       mutate(Date = as.character(Date)) %>%
+    #       select(Date, libelle, Debit, Compte)
+    #     
+    #   }
+    # }
+    
+    
     if(input$typeGraph == 'BonbonMiel_tot' & !is.null(giraph_select()))
       tab <- RV$df_identifie %>%
-      filter(if(giraph_select() == 'NA') is.na(classe) else classe == giraph_select()) %>%
+      filter(if(giraph_select() == 'NA') is.na(classe) else classe == giraph_select() | super_classe == giraph_select()) %>%
       arrange(desc(Debit)) %>%
       mutate(Date = as.character(Date)) %>%
       select(Date, libelle, Debit, Compte)
-    
+
     if(input$typeGraph == 'BonbonMiel_trim' & !is.null(giraph_select())){
-      
+
       select_classe <- str_extract(giraph_select(), '^[^/]+')
-      
+
       # début et fin du trimestre
       centreTrimestre <- as.Date(str_extract(giraph_select(), '[^/]+$'))
       deb <- as.Date(paste0(format(centreTrimestre - 30, '%Y-%m-'), 01))
       fin <- as.Date(paste0(format(centreTrimestre + 60, '%Y-%m-'), 01))
       cat('deb:', as.character(deb), 'fin:', as.character(fin), '\n')
-      
+
       tab <- RV$df_identifie %>%
-        filter(if(select_classe == 'NA') is.na(classe) else classe == select_classe, 
+        filter(if(select_classe == 'NA') is.na(classe) else classe == select_classe | super_classe == select_classe,
                Date >= deb, Date < fin) %>%
         arrange(desc(Debit)) %>%
         mutate(Date = as.character(Date)) %>%
