@@ -29,13 +29,20 @@ ui <- #page_fluid(
       title = "Selection des données", 
       
       #--------------------------------------------------------------------#
-      #####                  __ Mem. Emplacements                      #####
+      #####                       __ Sauvegarde                        #####
       #--------------------------------------------------------------------#
-      
-      checkboxInput(inputId = 'mem_loc',
-                    label = "memoriser l'emplacement des fichiers",
-                    value = TRUE),
-      
+      fluidRow(
+        column(2,
+               actionButton(inputId = 'save',
+                            label = '',
+                            icon = icon('floppy-disk'))
+        ),
+        column(5,
+               checkboxInput(inputId = 'sauv_auto',
+                             label = "sauvegarde automatique tte les 5mn (non implémenté)",
+                             value = TRUE),
+        )
+      ),
       
       #--------------------------------------------------------------------#
       #####                      __ Importation                        #####
@@ -45,30 +52,30 @@ ui <- #page_fluid(
       
       fluidRow(
         column(8,
-               shinyFilesButton(
+               fileInput(
                  'input_releves',
                  label = 'Relevés de compte (plusieurs fichiers .csv ou .pdf)',
-                 title = 'Relevés de compte (plusieurs fichiers .csv ou .pdf)',
+                 # title = 'Relevés de compte (plusieurs fichiers .csv ou .pdf)',
                  multiple = TRUE,
-                 # width = '600px',
+                 width = '600px',
                  accept = c("text/csv", 'text/pdf', '.csv', '.pdf')
                ),
                
-               shinyFilesButton(
+               fileInput(
                  'input_identifie',
                  label = 'Relevé de comptes catégorisé',
-                 title = 'Relevé de comptes catégorisé',
+                 # title = 'Relevé de comptes catégorisé',
                  multiple = FALSE,
-                 # width = '600px',
+                 width = '600px',
                  accept = c("text/csv")
                ),
                
-               shinyFilesButton(
+               fileInput(
                  'input_resume',
                  label = 'Résumé Trimestriel',
-                 title = 'Résumé Trimestriel',
+                 # title = 'Résumé Trimestriel',
                  multiple = FALSE,
-                 # width = '600px',
+                 width = '600px',
                  accept = c("text/csv")
                )
         ),

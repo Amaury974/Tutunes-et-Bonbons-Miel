@@ -96,39 +96,63 @@
 # ~~~~{    Unique    }~~~~
 BonbonMiel_unique_giraph <- function(df_resume_trimestre, list_col){
   
+  hsize = 3
+  
   df_camembert <- df_resume_trimestre %>%
-    group_by(classe) %>%
+    group_by(super_classe, classe) %>%
     summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
     ungroup() %>%
     
     arrange(classe) %>%
     mutate(ylab = cumsum(Debit)-0.5*Debit,
            classe_num = as.numeric(classe),
-           classe_label = paste(str_extract(classe,'[^_]+$'),'\n', round(Debit), '€')) %>%
+           classe_label = paste(classe,'\n', round(Debit), '€')) %>%
+    group_by(super_classe) %>%
+    mutate(super_classe_label = paste(super_classe,'\n', round(sum(Debit)), '€')) %>%
     as.data.frame()
   
-  hsize = 2
+  df_camembert_lab <- df_camembert %>%
+    group_by(super_classe) %>%
+    summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+    ungroup() %>%
+    mutate(total = sum(Debit)) %>%
+    mutate(ylab = cumsum(Debit)-0.5*Debit,
+           hjust_dir = 0.5-sinpi(2*ylab/total)/2,
+           vjust_dir = 0.5-cospi(2*ylab/total)/2)
   
-  myplot <- ggplot(df_camembert,
-                   aes(x=hsize, y=Debit, fill=classe,
-                       tooltip=classe_label, data_id = classe)) +
-    geom_bar_interactive(#aes(onclick = glue::glue('
-      # Shiny.setInputValue("last_click", " ");
-      # Shiny.setInputValue("last_click", "{classe}");')),
-      width = 1, stat = "identity", position = position_stack(reverse = TRUE)) +
+  
+  
+  
+  myplot <-
+  ggplot(df_camembert) +
+    
+    # bande externe : superClasse
+    geom_bar_interactive(aes(x = 1.2+hsize,
+                             y = Debit,
+                             fill = super_classe,
+                             tooltip = super_classe_label,
+                             data_id = super_classe),
+                         width = 0.4, stat = "identity", position = position_stack(reverse = TRUE)) +
+    
+    # bande interne : classe
+    geom_bar_interactive(aes(x = hsize, 
+                             y = Debit,
+                             fill = classe,
+                             tooltip=classe_label, 
+                             data_id = classe),
+                         width = 2, stat = "identity", position = position_stack(reverse = TRUE)) +
+    
     scale_fill_manual(values = list_col) +
     
-    # ggrepel::geom_text_repel(aes(y = ylab,
-    #                              label = paste(str_extract(classe,'[^_]+$'),'\n', round(Debit), '€')),
-    #                          point.size = NA,
-    #                          min.segment.length = 0.2,
-    #                          max.overlaps = 15,
-    #                          # xlim = c(1.5,NA),
-    # ) +
+    geom_text(data = df_camembert_lab, 
+              aes(y = ylab, label = super_classe, hjust = hjust_dir, vjust = vjust_dir), 
+              x = 1.6 + hsize) +
+    
+    
     guides(fill = 'none') +
     coord_polar("y", start=0) +
-    xlim(c(0.2, hsize + 0.5)) +
-    theme_void() 
+    xlim(c(0, 1.5+hsize)) +
+    theme_void()
   
   
   
@@ -148,40 +172,69 @@ BonbonMiel_unique_giraph <- function(df_resume_trimestre, list_col){
 
 # ~~~~{    Par trimestre    }~~~~
 BonbonMiel_trimestriel_giraph <- function(df_resume_trimestre, list_col){
+  hsize = 3
   
   df_camembert_trim <- df_resume_trimestre %>%
-    group_by(classe, Label_Trimestre, trimestre) %>%
+    group_by(super_classe, classe, Label_Trimestre, trimestre) %>%
     summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+    
     group_by(Label_Trimestre) %>%
     arrange(classe) %>%
     mutate(ylab = cumsum(Debit)-0.5*Debit,
-           # classe_num = as.numeric(classe),
-           classe_label = paste(str_extract(classe,'[^_]+$'),'\n', round(Debit), '€'),
+           classe_label = paste(classe,'\n', round(Debit), '€'),
            classe_trimestre = paste0(classe,'/',trimestre)) %>%
+    
+    group_by(super_classe, trimestre) %>%
+    mutate(super_classe_label = paste(super_classe,'\n', round(sum(Debit)), '€'),
+           super_classe_trimestre = paste0(super_classe,'/',trimestre)) %>%
     as.data.frame()
   
-  hsize = 2
   
-  myplot <- ggplot(df_camembert_trim, 
-                   aes(x=hsize, y=Debit, fill=classe, 
-                       tooltip=classe_label, data_id = classe_trimestre)) +
+  
+  df_camembert_lab <- df_camembert_trim %>%
+    group_by(super_classe, Label_Trimestre) %>%
+    summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+    group_by(Label_Trimestre) %>%
+    mutate(total_trim = sum(Debit)) %>%
+    mutate(ylab = cumsum(Debit)-0.5*Debit) %>%
+    # décallage en fonction de la position dans le cercle
+    ungroup() %>%
+    mutate(max_total = max(total_trim),
+           hjust_dir = 0.5-sinpi(2*ylab/max_total)/2,
+           vjust_dir = 0.5-cospi(2*ylab/max_total)/2,
+           # hjust_dir = ifelse(ylab < max_total/2, 0, 1),
+           # vjust_dir = ifelse((ylab + max_total/4) %% max_total < max_total/2, 0, 1),
+           super_classe = if_else(Debit < 0.02*max_total, '', super_classe)) # retrait des trop petites classes pour eviter les chevauchements de label
+  
+  
+  myplot <-
+  ggplot(df_camembert_trim) +
+    # bande externe : superClasse
+    geom_bar_interactive(aes(x = 1.2+hsize,
+                             y = Debit,
+                             fill = super_classe,
+                             tooltip = super_classe_label,
+                             data_id = super_classe_trimestre),
+                         width = 0.4, stat = "identity", position = position_stack(reverse = TRUE)) +
     
-    geom_bar_interactive(width = 1, stat = "identity", position = position_stack(reverse = TRUE)) +
+    # bande interne : classe
+    geom_bar_interactive(aes(x = hsize, 
+                             y = Debit,
+                             fill = classe,
+                             tooltip=classe_label, 
+                             data_id = classe_trimestre),
+                         width = 2, stat = "identity", position = position_stack(reverse = TRUE)) +
+    
     scale_fill_manual(values = list_col) +
     
-    # ggrepel::geom_text_repel(aes(y = ylab,
-    #                              label = paste(str_extract(classe,'[^_]+$'),'\n', round(Debit), '€')),
-    #                          point.size = NA,
-    #                          # x = 1.3,
-    #                          min.segment.length = 0.2,
-    #                          max.overlaps = 15,
-    #                          xlim = c(1.5,NA)) +
+    geom_text(data = df_camembert_lab, 
+              aes(y = ylab, label = super_classe, hjust = hjust_dir, vjust = vjust_dir), 
+              x = 1.6 + hsize) +
     
     guides(fill = 'none') +
     facet_grid(.~Label_Trimestre) +
     coord_polar("y", start=0) +
-    xlim(c(0.2, hsize + 0.5)) +
-    # theme_minimal()
+    xlim(c(0, 1.5+hsize)) +
     theme_void()
   
   interactive_plot <- girafe(ggobj = myplot,
@@ -199,6 +252,65 @@ BonbonMiel_trimestriel_giraph <- function(df_resume_trimestre, list_col){
   
   
 }
+
+
+
+
+
+
+# BonbonMiel_trimestriel_giraph <- function(df_resume_trimestre, list_col){
+#   
+#   df_camembert_trim <- df_resume_trimestre %>%
+#     group_by(classe, Label_Trimestre, trimestre) %>%
+#     summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+#     group_by(Label_Trimestre) %>%
+#     arrange(classe) %>%
+#     mutate(ylab = cumsum(Debit)-0.5*Debit,
+#            # classe_num = as.numeric(classe),
+#            classe_label = paste(str_extract(classe,'[^_]+$'),'\n', round(Debit), '€'),
+#            classe_trimestre = paste0(classe,'/',trimestre)) %>%
+#     as.data.frame()
+#   
+#   hsize = 2
+#   
+#   myplot <- ggplot(df_camembert_trim, 
+#                    aes(x=hsize, y=Debit, fill=classe, 
+#                        tooltip=classe_label, data_id = classe_trimestre)) +
+#     
+#     geom_bar_interactive(width = 1, stat = "identity", position = position_stack(reverse = TRUE)) +
+#     scale_fill_manual(values = list_col) +
+#    
+#     
+#     # ggrepel::geom_text_repel(aes(y = ylab,
+#     #                              label = paste(str_extract(classe,'[^_]+$'),'\n', round(Debit), '€')),
+#     #                          point.size = NA,
+#     #                          # x = 1.3,
+#     #                          min.segment.length = 0.2,
+#     #                          max.overlaps = 15,
+#     #                          xlim = c(1.5,NA)) +
+#     
+#     guides(fill = 'none') +
+#     facet_grid(.~Label_Trimestre) +
+#     coord_polar("y", start=0) +
+#     xlim(c(0.2, hsize + 0.5)) +
+#     # theme_minimal()
+#     theme_void()
+#   
+#   interactive_plot <- girafe(ggobj = myplot,
+#                              height_svg = 3,
+#                              width_svg = 10,
+#                              options = list(
+#                                opts_hover(css = "filter: brightness(95%)"),
+#                                opts_hover_inv(css = "opacity:0.4;"),
+#                                opts_selection(css = 'stroke:black',
+#                                               type = "single")
+#                              ))
+#   interactive_plot
+#   
+#   # htmltools::save_html(interactive_plot, "BonbonMiel_trimestriel.html")
+#   
+#   
+# }
 
 
 

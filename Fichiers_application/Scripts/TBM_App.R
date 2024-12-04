@@ -11,7 +11,7 @@
 # rm(list=ls()); gc() ; options(warn = 1)
 # setwd('D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Git Tutunes et Bonbon Miel/Fichiers_application/Scripts')
 
-
+ 
 #,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#
 #************************************************************************************#
 
@@ -35,8 +35,8 @@ needed_packages <- c(#'Rtools', # utilisé par certains packages
   'colorspace', #nuances de couleurs au sein des super classes
   'ggiraph', # interactivité des graphiques
   'shiny', # application
-  'DT', # tableaux interactifs, modifiables
-  'shinyFiles' # chargement des fichiers non securisé mais laissant une trace de l'emplacement
+  'DT' # tableaux interactifs, modifiables
+  # 'shinyFiles' # chargement des fichiers non securisé mais laissant une trace de l'emplacement
 )
 
 
@@ -70,7 +70,9 @@ source('GOUZOU.R') # Gouzou_showoff()
 # ~~~~{    chargement des elements de l'application    }~~~~
 source('TBM_ui.R')
 source('TBM_server.R')
-source('TBM_sources.R')
+# source('TBM_sources.R')
+
+# setwd('../Source')
 
 # ~~~~{    chargement de l'application    }~~~~
 shinyApp(ui = ui, server = server)
