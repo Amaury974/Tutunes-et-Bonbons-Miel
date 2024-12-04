@@ -307,51 +307,23 @@ server <- function(input, output) {
     tab <- NULL
     
     
-    # if(!is.null(giraph_select())){
-    #   
-    #   tab <- RV$df_identifie %>%
-    #     filter(if(giraph_select() == 'NA') is.na(classe) else classe == giraph_select() | super_classe == giraph_select()) %>%
-    #     arrange(desc(Debit)) %>%
-    #     mutate(Date = as.character(Date)) %>%
-    #     select(Date, libelle, Debit, Compte)
-    #   
-    #   if(input$typeGraph == 'BonbonMiel_trim'){
-    #     
-    #     select_classe <- str_extract(giraph_select(), '^[^/]+')
-    #     
-    #     # début et fin du trimestre
-    #     centreTrimestre <- as.Date(str_extract(giraph_select(), '[^/]+$'))
-    #     deb <- as.Date(paste0(format(centreTrimestre - 30, '%Y-%m-'), 01))
-    #     fin <- as.Date(paste0(format(centreTrimestre + 60, '%Y-%m-'), 01))
-    #     cat('deb:', as.character(deb), 'fin:', as.character(fin), '\n')
-    #     
-    #     tab <- tab %>%
-    #       filter(Date >= deb, Date < fin) %>%
-    #       arrange(desc(Debit)) %>%
-    #       mutate(Date = as.character(Date)) %>%
-    #       select(Date, libelle, Debit, Compte)
-    #     
-    #   }
-    # }
-    
-    
     if(input$typeGraph == 'BonbonMiel_tot' & !is.null(giraph_select()))
       tab <- RV$df_identifie %>%
       filter(if(giraph_select() == 'NA') is.na(classe) else classe == giraph_select() | super_classe == giraph_select()) %>%
       arrange(desc(Debit)) %>%
       mutate(Date = as.character(Date)) %>%
       select(Date, libelle, Debit, Compte)
-
+    
     if(input$typeGraph == 'BonbonMiel_trim' & !is.null(giraph_select())){
-
+      
       select_classe <- str_extract(giraph_select(), '^[^/]+')
-
+      
       # début et fin du trimestre
       centreTrimestre <- as.Date(str_extract(giraph_select(), '[^/]+$'))
       deb <- as.Date(paste0(format(centreTrimestre - 30, '%Y-%m-'), 01))
       fin <- as.Date(paste0(format(centreTrimestre + 60, '%Y-%m-'), 01))
       cat('deb:', as.character(deb), 'fin:', as.character(fin), '\n')
-
+      
       tab <- RV$df_identifie %>%
         filter(if(select_classe == 'NA') is.na(classe) else classe == select_classe | super_classe == select_classe,
                Date >= deb, Date < fin) %>%

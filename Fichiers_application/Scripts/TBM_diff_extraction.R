@@ -17,6 +17,7 @@ f_diff_extraction <- function(dir, .dir_name=dir){
   # print(.dir_name)
   
   # ~~~~{    Banque Postale    }~~~~
+  # i=5
   releve_Poste <- data.frame()
   for(i in which(str_detect(.dir_name, 'releve.+pdf$'))){
     print(.dir_name[i])

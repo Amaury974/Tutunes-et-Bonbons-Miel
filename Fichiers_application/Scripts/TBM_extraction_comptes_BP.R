@@ -55,14 +55,14 @@ extraction_Poste <- function(dir_PDF){
     # Date dans les libelle
     # str_replace('(?<=\\d{2})/(?=\\d{2}/\\d{2})','-') %>%
     # str_replace('(?<=\\d{2}-\\d{2})/(?=\\d{2})','-') %>%
-    str_split('(?=\\s\\d{2}/\\d{2}\\s)')
-  
+    str_split('(?=((\\s)|(_SAUT_DE_LIGNE_))\\d{2}/\\d{2}\\s)')
+  # str_split('(?=\\s\\d{2}/\\d{2}\\s)')
   
   
   # PDF_3 <- sapply(PDF_2[[1]], str_split, pattern ='(?<=\\d{2}/\\d{2})') %>%
   #   as.data.frame()
   PDF_3 <- PDF_2[[1]] %>%
-    str_split('(?<=\\s\\d{2}/\\d{2}\\s)') %>%
+    str_split('(?<=((\\s)|(_SAUT_DE_LIGNE_))\\d{2}/\\d{2}\\s)') %>%
     as.data.frame() %>%
     t() %>%
     as_tibble()
@@ -85,6 +85,7 @@ extraction_Poste <- function(dir_PDF){
   
   PDF_3$Date <- PDF_3$Date %>%
     str_remove_all(' ') %>%
+    str_remove_all('_SAUT_DE_LIGNE_') %>%
     paste0('/', Annee) %>%
     as.Date(format = '%d/%m/%Y')
   

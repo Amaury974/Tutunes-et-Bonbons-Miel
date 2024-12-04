@@ -64,7 +64,7 @@ f_resume_trimestre <- function(df_identifie){
   
   resume_trim <- resume_trim %>%
     group_by(trimestre) %>%
-    summarize(Total = sum(Debit)) %>%
+    summarize(Total = round(sum(Debit))) %>%
     arrange(trimestre) %>%
     mutate(Label_Trimestre = paste(format(trimestre -30, '%b'), format(trimestre , '%b'), format(trimestre +30, '%b'), format(trimestre, '%Y'), '\n', Total, '€'),
            Label_Trimestre = factor(Label_Trimestre, unique(Label_Trimestre))) %>%

@@ -124,7 +124,7 @@ BonbonMiel_unique_giraph <- function(df_resume_trimestre, list_col){
   
   
   myplot <-
-  ggplot(df_camembert) +
+    ggplot(df_camembert) +
     
     # bande externe : superClasse
     geom_bar_interactive(aes(x = 1.2+hsize,
@@ -150,7 +150,7 @@ BonbonMiel_unique_giraph <- function(df_resume_trimestre, list_col){
     
     
     guides(fill = 'none') +
-    coord_polar("y", start=0) +
+    coord_polar("y", start=0, clip = 'off') +
     xlim(c(0, 1.5+hsize)) +
     theme_void()
   
@@ -173,23 +173,23 @@ BonbonMiel_unique_giraph <- function(df_resume_trimestre, list_col){
 # ~~~~{    Par trimestre    }~~~~
 BonbonMiel_trimestriel_giraph <- function(df_resume_trimestre, list_col){
   hsize = 3
-  
-  df_camembert_trim <- df_resume_trimestre %>%
+
+    df_camembert_trim <- df_resume_trimestre %>%
     group_by(super_classe, classe, Label_Trimestre, trimestre) %>%
     summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
     
     group_by(Label_Trimestre) %>%
     arrange(classe) %>%
-    mutate(ylab = cumsum(Debit)-0.5*Debit,
-           classe_label = paste(classe,'\n', round(Debit), '€'),
+    mutate(classe_label = paste(classe,'\n', round(Debit), '€'),
            classe_trimestre = paste0(classe,'/',trimestre)) %>%
     
     group_by(super_classe, trimestre) %>%
     mutate(super_classe_label = paste(super_classe,'\n', round(sum(Debit)), '€'),
            super_classe_trimestre = paste0(super_classe,'/',trimestre)) %>%
+    mutate(an = str_extract(Label_Trimestre, '\\d{4}'),
+           trimestre_an = str_trim(str_extract(Label_Trimestre, '^\\D+')),
+           trimestre_an = factor(trimestre_an, c('janv. févr. mars', 'avr. mai juin', 'juil. août sept.', 'oct. nov. déc.'))) %>%
     as.data.frame()
-  
-  
   
   df_camembert_lab <- df_camembert_trim %>%
     group_by(super_classe, Label_Trimestre) %>%
@@ -202,13 +202,13 @@ BonbonMiel_trimestriel_giraph <- function(df_resume_trimestre, list_col){
     mutate(max_total = max(total_trim),
            hjust_dir = 0.5-sinpi(2*ylab/max_total)/2,
            vjust_dir = 0.5-cospi(2*ylab/max_total)/2,
-           # hjust_dir = ifelse(ylab < max_total/2, 0, 1),
-           # vjust_dir = ifelse((ylab + max_total/4) %% max_total < max_total/2, 0, 1),
-           super_classe = if_else(Debit < 0.02*max_total, '', super_classe)) # retrait des trop petites classes pour eviter les chevauchements de label
-  
+           super_classe = if_else(Debit < 0.02*max_total, '', super_classe)) %>% # retrait des trop petites classes pour eviter les chevauchements de label
+    mutate(an = str_extract(Label_Trimestre, '\\d{4}'),
+           trimestre_an = str_trim(str_extract(Label_Trimestre, '^\\D+')),
+           trimestre_an = factor(trimestre_an, c('janv. févr. mars', 'avr. mai juin', 'juil. août sept.', 'oct. nov. déc.')))
   
   myplot <-
-  ggplot(df_camembert_trim) +
+    ggplot(df_camembert_trim) +
     # bande externe : superClasse
     geom_bar_interactive(aes(x = 1.2+hsize,
                              y = Debit,
@@ -231,11 +231,15 @@ BonbonMiel_trimestriel_giraph <- function(df_resume_trimestre, list_col){
               aes(y = ylab, label = super_classe, hjust = hjust_dir, vjust = vjust_dir), 
               x = 1.6 + hsize) +
     
+    geom_text(aes(label = str_extract(Label_Trimestre, '\\d+ €$')), x = 0, y = 0)+
+    
     guides(fill = 'none') +
-    facet_grid(.~Label_Trimestre) +
-    coord_polar("y", start=0) +
+    facet_grid(an~trimestre_an) + # facet_grid(.~Label_Trimestre) 
+    coord_polar("y", start=0, clip = 'off') +
     xlim(c(0, 1.5+hsize)) +
-    theme_void()
+    theme_void(base_size = 10) + 
+    theme(strip.text.y = element_text(size = 12, angle = 270, vjust = 1),
+          strip.text.x = element_text(size = 12, vjust = 1))
   
   interactive_plot <- girafe(ggobj = myplot,
                              height_svg = 3,
@@ -255,6 +259,62 @@ BonbonMiel_trimestriel_giraph <- function(df_resume_trimestre, list_col){
 
 
 
+#  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
+#####                   Graph . histogramme                   #####
+#  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
+histogramme_trimestriel_giraph <- function(df_resume_trimestre, list_col){
+  hsize = 3
+  
+  df_camembert_trim <- df_resume_trimestre %>%
+    group_by(super_classe, classe, Label_Trimestre, trimestre) %>%
+    summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+    
+    group_by(Label_Trimestre) %>%
+    arrange(classe) %>%
+    mutate(classe_label = paste(classe,'\n', round(Debit), '€'),
+           classe_trimestre = paste0(classe,'/',trimestre)) %>%
+    
+    group_by(super_classe, trimestre) %>%
+    mutate(super_classe_label = paste(super_classe,'\n', round(sum(Debit)), '€'),
+           super_classe_trimestre = paste0(super_classe,'/',trimestre)) %>%
+    mutate(an = str_extract(Label_Trimestre, '\\d{4}'),
+           trimestre_an = str_trim(str_extract(Label_Trimestre, '^\\D+')),
+           trimestre_an = factor(trimestre_an, c('janv. févr. mars', 'avr. mai juin', 'juil. août sept.', 'oct. nov. déc.')) ) %>%
+    as.data.frame()
+  
+  
+  # myplot <-
+  ggplot(df_camembert_trim) +
+    geom_bar_interactive(aes(x = classe, 
+                             y = Debit,
+                             fill = classe,
+                             tooltip=classe_label, 
+                             data_id = classe_trimestre),
+                         stat = "identity") +
+    
+    scale_fill_manual(values = list_col) +
+    
+    guides(fill = 'none') +
+    facet_grid(an~trimestre_an) + # facet_grid(.~Label_Trimestre) 
+    theme(axis.text.x = element_text( angle = 45, hjust = 1),
+          strip.text.y = element_text(size = 12, angle = 270, vjust = 1),
+          strip.text.x = element_text(size = 12, vjust = 1))
+  
+  interactive_plot <- girafe(ggobj = myplot,
+                             height_svg = 3,
+                             width_svg = 10,
+                             options = list(
+                               opts_hover(css = "filter: brightness(95%)"),
+                               opts_hover_inv(css = "opacity:0.4;"),
+                               opts_selection(css = 'stroke:black',
+                                              type = "single")
+                             ))
+  interactive_plot
+  
+  # htmltools::save_html(interactive_plot, "BonbonMiel_trimestriel.html")
+  
+  
+}
 
 
 
