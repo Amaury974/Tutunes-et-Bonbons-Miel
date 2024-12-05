@@ -279,19 +279,11 @@ server <- function(input, output) {
                         trimestre <=input$trimestre_subset[2])
     
     # df_resume <- df_resume_trimestre()
-    
-    if(input$typeGraph == 'BonbonMiel_tot')
-      plot <- BonbonMiel_unique_giraph(df_resume, RV$list_col)
-    
-    
-    if(input$typeGraph == 'BonbonMiel_trim')
-      plot <- BonbonMiel_trimestriel_giraph(df_resume, RV$list_col)
-    
-    if(input$typeGraph == 'courbe')
-      plot <- Courbe_empile_giraph(df_resume, RV$list_col)
+    if(!is.null(input$typeGraph))
+      plot <- call(input$typeGraph, df_resume_trimestre=df_resume, list_col=RV$list_col)
     
     cat('                          _ fin\n\n')
-    plot
+    eval(plot)
   })
   
   # ~~~~{    Réaction au click : affichage des données    }~~~~
@@ -307,14 +299,14 @@ server <- function(input, output) {
     tab <- NULL
     
     
-    if(input$typeGraph == 'BonbonMiel_tot' & !is.null(giraph_select()))
+    if(input$typeGraph == 'BonbonMiel_unique_giraph' & !is.null(giraph_select()))
       tab <- RV$df_identifie %>%
       filter(if(giraph_select() == 'NA') is.na(classe) else classe == giraph_select() | super_classe == giraph_select()) %>%
       arrange(desc(Debit)) %>%
       mutate(Date = as.character(Date)) %>%
       select(Date, libelle, Debit, Compte)
     
-    if(input$typeGraph == 'BonbonMiel_trim' & !is.null(giraph_select())){
+    if(input$typeGraph != 'BonbonMiel_unique_giraph' & !is.null(giraph_select())){
       
       select_classe <- str_extract(giraph_select(), '^[^/]+')
       

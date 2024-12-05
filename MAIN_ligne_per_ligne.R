@@ -89,6 +89,7 @@ df_identifie <- fun_classif(releve, df_classif)
 
 setwd(dir_data)
 write.csv2(df_identifie, 'Releve_de_comptes_categorises.csv')
+
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####              Init. Manipulation des tableaux            #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
@@ -108,7 +109,8 @@ list_col <- f_couleurs(df_resume_trimestre)
 
 #************************************************************************************#
 #''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''#
-
+call('BonbonMiel_unique_giraph', df_resume_trimestre=df_resume_trimestre, list_col=list_col) %>%
+  eval()
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####                   Graph . Bonbons Miel                  #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #

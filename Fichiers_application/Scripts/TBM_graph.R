@@ -7,95 +7,13 @@
 # encoding UTF8
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
 
-
-
-# #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
-# #####                    Graph . Camembert                    #####
-# #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
-# 
-# 
-# # ~~~~{    Unique    }~~~~
-# BonbonMiel_unique <- function(df_resume_trimestre, list_col){
-#   
-#   df_camembert <- df_resume_trimestre %>%
-#     group_by(classe) %>%
-#     summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
-#     ungroup() %>%
-#     
-#     arrange(classe) %>%
-#     mutate(ylab = cumsum(Debit)-0.5*Debit,
-#            classe_num = as.numeric(classe)) %>%
-#     as.data.frame()
-#   
-#   hsize = 2
-#   
-# ggplot(df_camembert, aes(x=hsize, y=Debit, fill=classe)) +
-#   geom_bar(width = 1, stat = "identity", position = position_stack(reverse = TRUE)) +
-#   scale_fill_manual(values = list_col) +
-# 
-#   ggrepel::geom_text_repel(aes(y = ylab,
-#                                label = paste(str_extract(classe,'[^_]+$'),'\n', round(Debit), '€')),
-#                            point.size = NA,
-#                            min.segment.length = 0.2,
-#                            max.overlaps = 15,
-#                            # xlim = c(1.5,NA),
-#   ) +
-#   guides(fill = 'none') +
-#   coord_polar("y", start=0) +
-#   xlim(c(0.2, hsize + 0.5)) +
-#   theme_void()
-# 
-# }
-# 
-# 
-# 
-# # ~~~~{    Par trimestre    }~~~~
-# BonbonMiel_trimestriel <- function(df_resume_trimestre, list_col){
-#   
-#   df_camembert_trim <- df_resume_trimestre %>%
-#     group_by(classe, Label_Trimestre) %>%
-#     summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
-#     group_by(Label_Trimestre) %>%
-#     arrange(classe) %>%
-#     mutate(ylab = cumsum(Debit)-0.5*Debit,
-#            classe_num = as.numeric(classe),) %>%
-#     as.data.frame()
-#   
-#   hsize = 2
-#   
-#   ggplot(df_camembert_trim, aes(x=hsize, y=Debit, fill=classe)) +
-#     
-#     geom_bar(width = 1, stat = "identity", position = position_stack(reverse = TRUE)) +
-#     scale_fill_manual(values = list_col) +
-#     
-#     ggrepel::geom_text_repel(aes(y = ylab,
-#                                  label = paste(str_extract(classe,'[^_]+$'),'\n', round(Debit), '€')),
-#                              point.size = NA,
-#                              # x = 1.3,
-#                              min.segment.length = 0.2,
-#                              max.overlaps = 15,
-#                              xlim = c(1.5,NA)) +
-#     
-#     guides(fill = 'none') +
-#     facet_grid(.~Label_Trimestre) +
-#     coord_polar("y", start=0) +
-#     xlim(c(0.2, hsize + 0.5)) +
-#     # theme_minimal()
-#     theme_void()
-#   
-#   
-#   
-#   
-# }
-
-
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####                 Graph . BonbonMiel ggiraph              #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
 # ~~~~{    Unique    }~~~~
 BonbonMiel_unique_giraph <- function(df_resume_trimestre, list_col){
-  
+  print('bbm unique')
   hsize = 3
   
   df_camembert <- df_resume_trimestre %>%
@@ -173,8 +91,8 @@ BonbonMiel_unique_giraph <- function(df_resume_trimestre, list_col){
 # ~~~~{    Par trimestre    }~~~~
 BonbonMiel_trimestriel_giraph <- function(df_resume_trimestre, list_col){
   hsize = 3
-
-    df_camembert_trim <- df_resume_trimestre %>%
+  
+  df_camembert_trim <- df_resume_trimestre %>%
     group_by(super_classe, classe, Label_Trimestre, trimestre) %>%
     summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
     
@@ -209,42 +127,55 @@ BonbonMiel_trimestriel_giraph <- function(df_resume_trimestre, list_col){
   
   myplot <-
     ggplot(df_camembert_trim) +
+    
     # bande externe : superClasse
-    geom_bar_interactive(aes(x = 1.2+hsize,
-                             y = Debit,
-                             fill = super_classe,
+    geom_bar_interactive(aes(x       = 1.2 + hsize,
+                             y       = Debit,
+                             fill    = super_classe,
                              tooltip = super_classe_label,
                              data_id = super_classe_trimestre),
-                         width = 0.4, stat = "identity", position = position_stack(reverse = TRUE)) +
+                         width   = 0.4, 
+                         stat    = "identity", 
+                         position = position_stack(reverse = TRUE)) +
     
     # bande interne : classe
-    geom_bar_interactive(aes(x = hsize, 
-                             y = Debit,
-                             fill = classe,
-                             tooltip=classe_label, 
+    geom_bar_interactive(aes(x       = hsize, 
+                             y       = Debit,
+                             fill    = classe,
+                             tooltip = classe_label, 
                              data_id = classe_trimestre),
-                         width = 2, stat = "identity", position = position_stack(reverse = TRUE)) +
+                         width    = 2, 
+                         stat     = "identity", 
+                         position = position_stack(reverse = TRUE)) +
     
     scale_fill_manual(values = list_col) +
     
     geom_text(data = df_camembert_lab, 
-              aes(y = ylab, label = super_classe, hjust = hjust_dir, vjust = vjust_dir), 
-              x = 1.6 + hsize) +
+              aes(y     = ylab, 
+                  label = super_classe, 
+                  hjust = hjust_dir, 
+                  vjust = vjust_dir), 
+              x    = 1.6 + hsize) +
     
-    geom_text(aes(label = str_extract(Label_Trimestre, '\\d+ €$')), x = 0, y = 0)+
+    geom_text(aes(label = str_extract(Label_Trimestre, '\\d+ €$')),
+              x = 0, y = 0)+
     
     guides(fill = 'none') +
     facet_grid(an~trimestre_an) + # facet_grid(.~Label_Trimestre) 
     coord_polar("y", start=0, clip = 'off') +
     xlim(c(0, 1.5+hsize)) +
-    theme_void(base_size = 10) + 
-    theme(strip.text.y = element_text(size = 12, angle = 270, vjust = 1),
-          strip.text.x = element_text(size = 12, vjust = 1))
+    theme_void() + 
+    theme(strip.text.y = element_text( angle = 270, vjust = 1),
+          strip.text.x = element_text( vjust = 1))
+  # size = 12,
   
-  interactive_plot <- girafe(ggobj = myplot,
-                             height_svg = 3,
-                             width_svg = 10,
-                             options = list(
+  
+  
+  interactive_plot <- girafe(ggobj      = myplot,
+                             height_svg = 2*length(unique(df_camembert_trim$an)),
+                             width_svg  = 10,
+                             # pointsize  = 5,
+                             options    = list(
                                opts_hover(css = "filter: brightness(95%)"),
                                opts_hover_inv(css = "opacity:0.4;"),
                                opts_selection(css = 'stroke:black',
@@ -262,6 +193,9 @@ BonbonMiel_trimestriel_giraph <- function(df_resume_trimestre, list_col){
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####                   Graph . histogramme                   #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
+
+# ~~~~{    Par trimestre    }~~~~
+
 histogramme_trimestriel_giraph <- function(df_resume_trimestre, list_col){
   hsize = 3
   
@@ -283,8 +217,8 @@ histogramme_trimestriel_giraph <- function(df_resume_trimestre, list_col){
     as.data.frame()
   
   
-  # myplot <-
-  ggplot(df_camembert_trim) +
+  myplot <-
+    ggplot(df_camembert_trim) +
     geom_bar_interactive(aes(x = classe, 
                              y = Debit,
                              fill = classe,
@@ -317,61 +251,60 @@ histogramme_trimestriel_giraph <- function(df_resume_trimestre, list_col){
 }
 
 
-
-# BonbonMiel_trimestriel_giraph <- function(df_resume_trimestre, list_col){
-#   
-#   df_camembert_trim <- df_resume_trimestre %>%
-#     group_by(classe, Label_Trimestre, trimestre) %>%
-#     summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
-#     group_by(Label_Trimestre) %>%
-#     arrange(classe) %>%
-#     mutate(ylab = cumsum(Debit)-0.5*Debit,
-#            # classe_num = as.numeric(classe),
-#            classe_label = paste(str_extract(classe,'[^_]+$'),'\n', round(Debit), '€'),
-#            classe_trimestre = paste0(classe,'/',trimestre)) %>%
-#     as.data.frame()
-#   
-#   hsize = 2
-#   
-#   myplot <- ggplot(df_camembert_trim, 
-#                    aes(x=hsize, y=Debit, fill=classe, 
-#                        tooltip=classe_label, data_id = classe_trimestre)) +
-#     
-#     geom_bar_interactive(width = 1, stat = "identity", position = position_stack(reverse = TRUE)) +
-#     scale_fill_manual(values = list_col) +
-#    
-#     
-#     # ggrepel::geom_text_repel(aes(y = ylab,
-#     #                              label = paste(str_extract(classe,'[^_]+$'),'\n', round(Debit), '€')),
-#     #                          point.size = NA,
-#     #                          # x = 1.3,
-#     #                          min.segment.length = 0.2,
-#     #                          max.overlaps = 15,
-#     #                          xlim = c(1.5,NA)) +
-#     
-#     guides(fill = 'none') +
-#     facet_grid(.~Label_Trimestre) +
-#     coord_polar("y", start=0) +
-#     xlim(c(0.2, hsize + 0.5)) +
-#     # theme_minimal()
-#     theme_void()
-#   
-#   interactive_plot <- girafe(ggobj = myplot,
-#                              height_svg = 3,
-#                              width_svg = 10,
-#                              options = list(
-#                                opts_hover(css = "filter: brightness(95%)"),
-#                                opts_hover_inv(css = "opacity:0.4;"),
-#                                opts_selection(css = 'stroke:black',
-#                                               type = "single")
-#                              ))
-#   interactive_plot
-#   
-#   # htmltools::save_html(interactive_plot, "BonbonMiel_trimestriel.html")
-#   
-#   
-# }
-
+# ~~~~{    Un seul graphique, mêmes classes côte à côte    }~~~~
+histogramme_classe_giraph <- function(df_resume_trimestre, list_col){
+  hsize = 3
+  # df_camembert_trim[1,"Label_Trimestre"]
+  
+  
+  df_camembert_trim <- df_resume_trimestre %>%
+    arrange(classe) %>%
+    mutate(Label_Trimestre = str_c(format(trimestre, '%Y'),' T',round(as.numeric(format(trimestre, '%m'))/3)),
+           sC_C = str_c(super_classe, '_', classe),
+           sC_C = factor(sC_C, unique(sC_C))) %>%
+    group_by(super_classe, classe, sC_C, Label_Trimestre, trimestre) %>%
+    summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+    
+    group_by(Label_Trimestre) %>%
+    arrange(sC_C) %>%
+    mutate(classe_label = paste(Label_Trimestre, sC_C,'\n', round(Debit), '€'),
+           classe_trimestre = paste0(classe,'/',trimestre)) %>%
+    
+    group_by(super_classe, trimestre) %>%
+    mutate(super_classe_label = paste(super_classe,'\n', round(sum(Debit)), '€'),
+           super_classe_trimestre = paste0(super_classe,'/',trimestre)) %>%
+    mutate(an = str_extract(Label_Trimestre, '\\d{4}'),
+           trimestre_an = str_trim(str_extract(Label_Trimestre, '^\\D+')),
+           trimestre_an = factor(trimestre_an, c('janv. févr. mars', 'avr. mai juin', 'juil. août sept.', 'oct. nov. déc.')) ) %>%
+    as.data.frame()
+  
+  
+  myplot <-
+    ggplot(df_camembert_trim) +
+    geom_bar_interactive(aes(x = sC_C, 
+                             y = Debit,
+                             fill = Label_Trimestre,
+                             tooltip=classe_label, 
+                             data_id = classe_trimestre),
+                         stat = "identity", position = position_dodge()) +
+    labs(fill = 'Trimestre', y='Débit (€)') +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          axis.title.x = element_blank())
+  
+  interactive_plot <- girafe(ggobj = myplot,
+                             height_svg = 3,
+                             width_svg = 10,
+                             options = list(
+                               opts_hover(css = "filter: brightness(95%)"),
+                               opts_hover_inv(css = "opacity:0.4;"),
+                               opts_selection(css = 'stroke:black',
+                                              type = "single")
+                             ))
+  interactive_plot
+  
+  # htmltools::save_html(interactive_plot, "BonbonMiel_trimestriel.html")
+  
+}
 
 
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
@@ -440,51 +373,5 @@ Courbe_empile_giraph <- function(df_resume_trimestre, list_col){
   
   # htmltools::save_html(interactive_plot, "Courbe_empile.html")
 }
-
-# # ~~~~{    GGirafe    }~~~~
-# 
-# Courbe_empile_giraph <- function(df_resume_trimestre, list_col){
-#   
-#   df_courbe_empile <- df_resume_trimestre %>%
-#     group_by(super_classe, classe, trimestre) %>%
-#     summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
-#     group_by(trimestre) %>%
-#     arrange(super_classe, classe) %>%
-#     mutate(YMAX = cumsum(Debit),
-#            YMIN = YMAX - Debit)  %>%
-#     
-#     # filter(!is.na(classe))
-#     # %>%
-#     
-#     # dunno why on a besoin de tout ça ...
-#     arrange(desc(super_classe), desc(classe)) %>%
-#     mutate(super_classe = factor(super_classe, unique(super_classe)),
-#            classe = factor(classe, unique(classe)),
-#            # classe_label = paste(str_extract(classe,'[^_]+$'),'\n', round(Debit), '€')
-#     ) %>%
-#     filter(!is.na(classe))
-#   
-#   
-#   # y = Debit,
-#   myplot <-
-#     ggplot(df_courbe_empile, aes(x=trimestre,  fill = classe,
-#                                  tooltip=classe, data_id = classe)) +
-#     # geom_area_interactive(position = position_stack(reverse = TRUE)) +
-#     geom_ribbon_interactive(aes(ymin = YMIN, ymax = YMAX)) +
-#     
-#     scale_fill_manual(values = list_col) +
-#     guides(fill = 'none')
-#   
-#   
-#   interactive_plot<-girafe(ggobj = myplot,
-#                            options = list(
-#                              opts_hover(css = "filter: brightness(95%)"),
-#                              opts_hover_inv(css = "opacity:0.4;")
-#                            )
-#   )
-#   interactive_plot
-#   
-#   # htmltools::save_html(interactive_plot, "Courbe_empile.html")
-# }
 
 

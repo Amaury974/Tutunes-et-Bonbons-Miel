@@ -233,9 +233,11 @@ ui <- #page_fluid(
                selectInput(
                  inputId = 'typeGraph',
                  label = 'Type de graphique',
-                 choices = list('résumé en un seul gros bonbon miel'='BonbonMiel_tot',
-                                'un bonbon miel  par trimestre'='BonbonMiel_trim',
-                                'courbes empilés'='courbe')
+                 choices = list('résumé en un seul gros bonbon miel'='BonbonMiel_unique_giraph',
+                                'un bonbon miel par trimestre'='BonbonMiel_trimestriel_giraph',
+                                'histogramme par trimestre'='histogramme_trimestriel_giraph',
+                                'histogramme comparaison par classe'='histogramme_classe_giraph',
+                                'courbes empilés (in proogress)'='Courbe_empile_giraph')
                )
         ), 
       ),
