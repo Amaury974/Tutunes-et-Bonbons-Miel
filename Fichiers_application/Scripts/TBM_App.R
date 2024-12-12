@@ -25,6 +25,7 @@
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
 # ~~~~{    chargement des packages    }~~~~
+cat('>> Chargement Packages \n\n')
 
 needed_packages <- c(#'Rtools', # utilisé par certains packages
   'dplyr', # manipulation de données / tableaux
@@ -44,7 +45,7 @@ install.packages(setdiff(needed_packages, rownames(installed.packages())))
 
 
 for(pack_i in needed_packages)
-  require(pack_i, character.only = TRUE)
+  require(pack_i, character.only = TRUE, quietly = TRUE, warn.conflicts = FALSE)
 
 
 # options dpyr
@@ -56,6 +57,8 @@ theme_set(theme_light()) ; options(ggplot2.continuous.colour="viridis", ggplot2.
 
 
 # ~~~~{    chargement des fonctions    }~~~~
+cat('>> Chargement Fonctions \n\n')
+
 print(getwd())
 # setwd('Scripts')
 source('TBM_diff_extraction.R')
@@ -68,9 +71,13 @@ source('TBM_util.R')
 source('GOUZOU.R') # Gouzou_showoff()
 
 # ~~~~{    chargement des elements de l'application    }~~~~
+cat('>> Chargement Application \n\n')
+
+source('TBM_sources.R')
 source('TBM_ui.R')
 source('TBM_server.R')
-# source('TBM_sources.R')
+
+
 
 # setwd('../Source')
 

@@ -6,26 +6,32 @@
 # R version 4.4.2
 # encoding UTF8
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-
 double_identification <- ''
 
 server <- function(input, output) {
   
-  setwd('../Source')
-  print(getwd())
+  # setwd('../Source')
+  # print(getwd())
+  
+  cat('>> Préchargement Données _ 1\n')
   
   RV <- reactiveValues(data=NULL)
   RV$df_classif <- df_classif
   
-  print(list.files())
-  if('save.RDS' %in% list.files()) {
+    # cat('emplacement du fichier de sauvegarde', 'D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Data/save.RDS', file = 'direction_sauvegarde.txt', sep = '\n')
+  
+  RDS_files <- try(readRDS(dir_sauvegarde), silent = TRUE)
+  
+  # print(list.files(dir_sauvegarde))
+  if(!inherits(RDS_files, "try-error")) {
     cat('>> Initialisation > chargement sauvegarde\n\n')
-    
     # load('save.RData')
-    RDS_files <- readRDS('save.RDS')
+    # RDS_files <- readRDS('save.RDS')
     for(i in names(RDS_files))
       RV[[i]] <- RDS_files[[i]]
   }
+  
+  cat('                         _ fin\n\n')
   
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   #####                  SERVER : Page 1 - Data IN                 #####
@@ -34,10 +40,14 @@ server <- function(input, output) {
   #--------------------------------------------------------------------#
   #####                      __ Sauvegarde                         #####
   #--------------------------------------------------------------------#
+  observeEvent(input$dir_sauvegarde, {
+    cat('>> Direction Sauvegarde\n\n')
+    dir_sauvegarde <<- input$dir_sauvegarde
+  })
   
   observeEvent(input$save, {
     cat('>> Sauvegarde\n\n')
-    saveRDS(list(df_classif=RV$df_classif, df_identifie=RV$df_identifie, df_resume_trimestre=RV$df_resume_trimestre, list_col=RV$list_col), 'save.RDS')
+    try(saveRDS(list(df_classif=RV$df_classif, df_identifie=RV$df_identifie, df_resume_trimestre=RV$df_resume_trimestre, list_col=RV$list_col), dir_sauvegarde))
   })
   
   #--------------------------------------------------------------------#
@@ -367,7 +377,12 @@ server <- function(input, output) {
   
   output$gouzou1 <- renderPlot(GOUZOU_geom(type = 'brezel')+theme_void())
   
-  
+  output$logo_TBM <- renderImage(list(
+    src = "../Source/logo Tutunes et Bonbons Miel.png",
+    contentType = "image/png",
+    alt = "logo Tutunes et Bonbons Miel",
+    height = '300px'
+  ))
   
 }
 
