@@ -12,7 +12,7 @@
 
 # la direction du script est donnée en argument dans l'appel
 wd <- commandArgs(trailingOnly = TRUE)
-print(wd)
+# print(wd)
 wd <- paste(wd, collapse = ' ')
 
 setwd(wd)

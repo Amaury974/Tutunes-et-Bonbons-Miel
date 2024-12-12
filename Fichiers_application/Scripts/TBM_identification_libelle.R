@@ -16,8 +16,6 @@
 #####                     Liste des dépenses                     #####
 #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
 
-df_classif <- read.csv2('../Source/classification_defaut.csv') %>%
-  mutate(Date = as.Date(Date))
 
 fun_classif <- function(releve, df_classif){
   

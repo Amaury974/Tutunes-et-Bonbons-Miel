@@ -32,18 +32,25 @@ ui <- #page_fluid(
       #####                       __ Sauvegarde                        #####
       #--------------------------------------------------------------------#
       fluidRow(
-        column(2,
+        column(1,
                actionButton(inputId = 'save',
-                            label = '',
+                            label = NULL,
                             icon = icon('floppy-disk'))
         ),
-        column(5,
+        column(3,
                checkboxInput(inputId = 'sauv_auto',
-                             label = "sauvegarde automatique tte les 5mn (non implémenté)",
-                             value = TRUE),
+                             label = "sauvegarde automatique ttes les 5mn (non implémenté)",
+                             value = TRUE,
+                             width = '100%'),
+        ),
+        
+        column(6,
+               textInput(inputId = 'dir_sauvegarde',
+                         label = NULL,
+                         value = dir_sauvegarde,
+                         width = '100%')
         )
       ),
-      
       #--------------------------------------------------------------------#
       #####                      __ Importation                        #####
       #--------------------------------------------------------------------#
@@ -82,7 +89,8 @@ ui <- #page_fluid(
         
         
         column(4,
-               plotOutput('gouzou1', height = '300px', width = '300px')
+               # imageOutput('logo_TBM', height = '300px')
+               # plotOutput('gouzou1', height = '300px', width = '300px')
         ),
       ),
       
