@@ -18,7 +18,7 @@ wd <- paste(wd, collapse = ' ')
 setwd(wd)
 
 library(shiny)
-runApp('Scripts/TBM_App.R', launch.browser = TRUE)
+runApp('TBM_App.R', launch.browser = TRUE)
 
 
 

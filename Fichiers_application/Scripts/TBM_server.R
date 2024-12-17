@@ -13,6 +13,10 @@ server <- function(input, output) {
   # setwd('../Source')
   # print(getwd())
   
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  #####               SERVER : 0 _ Chargement données              #####
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  
   cat('>> Préchargement Données _ 1\n')
   
   RV <- reactiveValues(data=NULL)
@@ -47,7 +51,7 @@ server <- function(input, output) {
   
   observeEvent(input$save, {
     cat('>> Sauvegarde\n\n')
-    try(saveRDS(list(df_classif=RV$df_classif, df_identifie=RV$df_identifie, df_resume_trimestre=RV$df_resume_trimestre, list_col=RV$list_col), dir_sauvegarde))
+    try(saveRDS(list(df_classif=RV$df_classif, df_identifie=RV$df_identifie), file = dir_sauvegarde))
   })
   
   #--------------------------------------------------------------------#
@@ -64,15 +68,15 @@ server <- function(input, output) {
       df_identifie <- f_diff_extraction(input$input_releves$datapath, .dir_name = input$input_releves$name) %>%
         fun_classif(RV$df_classif)
       
-      cat('                         _ 2\n')
+      # cat('                         _ 2\n')
       
-      df_resume_trimestre <- f_resume_trimestre(df_identifie)
-      cat('                         _ 3\n')
-      list_col <- f_couleurs(df_resume_trimestre)
-      
+      # df_resume_periode <- f_resume_trimestre(df_identifie)
+      # cat('                         _ 3\n')
+      # list_col <- f_couleurs(df_resume_periode)
+      # 
       RV$df_identifie <- df_identifie
-      RV$df_resume_trimestre <- df_resume_trimestre
-      RV$list_col <- list_col
+      # RV$df_resume_periode <- df_resume_periode
+      # RV$list_col <- list_col
       
       cat('                         _ fin\n\n')
       
@@ -90,35 +94,35 @@ server <- function(input, output) {
       df_identifie <- read.csv2(input$input_identifie$datapath)%>%
         mutate(Date = as.Date(Date))
       
-      df_resume_trimestre <- f_resume_trimestre(df_identifie)
-      
-      list_col <- f_couleurs(df_resume_trimestre)
-      
+      # df_resume_periode <- f_resume_trimestre(df_identifie)
+      #
+      # list_col <- f_couleurs(df_resume_periode)
+      #
       RV$df_identifie <- df_identifie
-      RV$df_resume_trimestre <- df_resume_trimestre
-      RV$list_col <- list_col
+      # RV$df_resume_periode <- df_resume_periode
+      # RV$list_col <- list_col
       
       
       cat('                            _ fin\n\n')
     }
   )
   
-  # ~~~~{    Depuis résumé    }~~~~
-  observeEvent(
-    input$input_resume,{
-      cat('>> Importation > résumés _ 1\n')
-      
-      df_resume_trimestre <- read.csv2(input$input_resume$datapath) %>%
-        mutate(trimestre = as.Date(trimestre))
-      
-      list_col <- f_couleurs(df_resume_trimestre)
-      
-      RV$df_resume_trimestre <- df_resume_trimestre
-      RV$list_col <- list_col
-      
-      cat('                         _ fin\n\n')
-    }
-  )
+  # # ~~~~{    Depuis résumé    }~~~~
+  # observeEvent(
+  #   input$input_resume,{
+  #     cat('>> Importation > résumés _ 1\n')
+  #     
+  #     df_resume_periode <- read.csv2(input$input_resume$datapath) %>%
+  #       mutate(trimestre = as.Date(trimestre))
+  #     
+  #     list_col <- f_couleurs(df_resume_periode)
+  #     
+  #     RV$df_resume_periode <- df_resume_periode
+  #     RV$list_col <- list_col
+  #     
+  #     cat('                         _ fin\n\n')
+  #   }
+  # )
   
   
   
@@ -133,7 +137,7 @@ server <- function(input, output) {
     input$upload_classif,{
       cat('>> Identification > Upload Classif _ 1\n')
       df_classif <<- read.csv2(input$upload_classif$datapath) %>%
-        mutate(Date = as.Date(Date))
+        mutate(Date = as.Date(Date, format = '%d/%m/%Y'))
       
       RV$df_classif <- df_classif
       cat('                                   _ fin\n\n')
@@ -146,15 +150,17 @@ server <- function(input, output) {
     content = function(file) {
       cat('>> Identification > Download Classif\n\n')
       RV$dir_identification_download <- file
-      write.csv2(df_classif, file, row.names = FALSE)
+      df_classif %>%
+        mutate(Date = format(Date, '%d/%m/%Y')) %>%
+      write.csv2(file, row.names = FALSE)
     }
   )
   
   
   
   # ~~~~{    MaJ    }~~~~
-  observeEvent(input$MaJ_classe, {
-    cat('>> Identification > MaJ classe _ 1\n')
+  observeEvent(input$MaJ_Classe, {
+    cat('>> Identification > MaJ Classe _ 1\n')
     
     if(input$nv_Marq != ''){
       cat('                             _ 2\n')
@@ -164,9 +170,9 @@ server <- function(input, output) {
       
       # print(input$nv_Date)
       
-      Nv_ligne <-data.frame(super_classe = input$nv_supClasse,
-                            classe = input$nv_Classe,
-                            lib_id = toupper(input$nv_Marq),
+      Nv_ligne <-data.frame(Super_Classe = input$nv_supClasse,
+                            Classe = input$nv_Classe,
+                            Marqueur = toupper(input$nv_Marq),
                             Date = if(length(input$nv_Date)) input$nv_Date else NA)
       cat("                ajout d'une ligne :")
       print(Nv_ligne)
@@ -182,18 +188,16 @@ server <- function(input, output) {
       select(Date, libelle, Debit, Compte) %>%
       fun_classif(df_classif)
     
-    df_resume_trimestre <- f_resume_trimestre(df_identifie)
-    
-    list_col <- f_couleurs(df_resume_trimestre)
+    # df_resume_periode <- f_resume_trimestre(df_identifie)
+    # 
+    # list_col <- f_couleurs(df_resume_periode)
     
     RV$df_classif <- df_classif %>%
-      # mutate(classe = factor(classe, levels(df_resume_trimestre$classe)),
-      #        super_classe = factor(super_classe, levels(df_resume_trimestre$super_classe))) %>%
-      arrange(super_classe, classe)
+      arrange(Super_Classe, Classe)
     
     RV$df_identifie <- df_identifie
-    RV$df_resume_trimestre <- df_resume_trimestre
-    RV$list_col <- list_col
+    # RV$df_resume_periode <- df_resume_periode
+    # RV$list_col <- list_col
     
     # ~~~~{    Reset des champs    }~~~~
     cat('                              _ 4\n')
@@ -207,15 +211,15 @@ server <- function(input, output) {
   
   
   # ~~~~{    Tab Classification    }~~~~
-  # output$tab_classif <- renderTable(arrange(RV$df_classif, super_classe, classe))
+  # output$tab_classif <- renderTable(arrange(RV$df_classif, Super_Classe, Classe))
   
   output$tab_classif <- renderDT(
     {
       cat('>> Identification > render classif\n\n')
       mutate(RV$df_classif,
              Date = format(Date, '%d/%m/%Y'),
-             classe = as.factor(classe),
-             super_classe = as.factor(super_classe))},
+             Classe = as.factor(Classe),
+             Super_Classe = as.factor(Super_Classe))},
     selection = 'none',
     # editable = 'row',
     filter = 'top',
@@ -240,7 +244,7 @@ server <- function(input, output) {
     
     if(!is.null(RV$df_identifie)){
       tab <- RV$df_identifie %>%
-        filter(is.na(lib_id), !is.na(Debit)) %>%
+        filter(is.na(Marqueur), !is.na(Debit)) %>%
         arrange(desc(Debit)) %>%
         mutate(Date = format(Date, '%d/%m/%Y')) %>%
         select(Date, libelle, Debit, Compte)
@@ -267,11 +271,20 @@ server <- function(input, output) {
   #####               SERVER : Page 2 - Graphiques                 #####
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   
+  
+  
+  df_resume_periode <- reactive(f_resume(RV$df_identifie, input$echelle))
+  
+  list_col  <- reactive(f_couleurs(df_resume_periode()))
+  
+  
+  
+  
   # ~~~~{    Mise à jour de la taille du curseur de dates    }~~~~
   observeEvent(RV$df_identifie, {
     MIN <- min(RV$df_identifie$Date, na.rm = TRUE)
     MAX <- max(RV$df_identifie$Date, na.rm = TRUE)
-    updateSliderInput(inputId = 'trimestre_subset', 
+    updateSliderInput(inputId = 'periode_subset', 
                       min = MIN, 
                       max = MAX,
                       value = c(MIN, MAX)
@@ -282,19 +295,26 @@ server <- function(input, output) {
   # ~~~~{    Graphique    }~~~~
   output$graph <- renderGirafe({
     cat('>> Graphiques > graphique _ 1\n')
-    cat('      ', input$typeGraph, '\n')
+    cat('      ', input$typeGraph, '\n',
+        '      ', input$echelle,'\n',
+        '      ', input$periode_subset[1],'à', input$periode_subset[2], '\n')
     
-    df_resume <- filter(RV$df_resume_trimestre,
-                        trimestre >= input$trimestre_subset[1],
-                        trimestre <=input$trimestre_subset[2])
+    df_resume <- filter(df_resume_periode(),
+                        periode >= periodifier(input$periode_subset[1], input$echelle, 'Date'),
+                        periode <= periodifier(input$periode_subset[2], input$echelle, 'Date'))
     
-    # df_resume <- df_resume_trimestre()
+    plot <- NULL
+    
+    # df_resume <- df_resume_periode()
+    if(input$typeGraph == 'Verification_donnees') plot <- Verification_donnees(df_resume, list_col(), RV$df_identifie) else {
     if(!is.null(input$typeGraph))
-      plot <- call(input$typeGraph, df_resume_trimestre=df_resume, list_col=RV$list_col)
+      plot <- eval(call(input$typeGraph, df_resume_periode=df_resume, list_col=list_col()))
+    }
     
     cat('                          _ fin\n\n')
-    eval(plot)
+    plot
   })
+  
   
   # ~~~~{    Réaction au click : affichage des données    }~~~~
   giraph_select <- reactive({
@@ -311,24 +331,23 @@ server <- function(input, output) {
     
     if(input$typeGraph == 'BonbonMiel_unique_giraph' & !is.null(giraph_select()))
       tab <- RV$df_identifie %>%
-      filter(if(giraph_select() == 'NA') is.na(classe) else classe == giraph_select() | super_classe == giraph_select()) %>%
+      filter(if(giraph_select() == 'NA') is.na(Classe) else Classe == giraph_select() | Super_Classe == giraph_select()) %>%
       arrange(desc(Debit)) %>%
       mutate(Date = as.character(Date)) %>%
       select(Date, libelle, Debit, Compte)
     
     if(input$typeGraph != 'BonbonMiel_unique_giraph' & !is.null(giraph_select())){
       
-      select_classe <- str_extract(giraph_select(), '^[^/]+')
+      select_Classe <- str_extract(giraph_select(), '^[^/]+')
       
-      # début et fin du trimestre
-      centreTrimestre <- as.Date(str_extract(giraph_select(), '[^/]+$'))
-      deb <- as.Date(paste0(format(centreTrimestre - 30, '%Y-%m-'), 01))
-      fin <- as.Date(paste0(format(centreTrimestre + 60, '%Y-%m-'), 01))
-      cat('deb:', as.character(deb), 'fin:', as.character(fin), '\n')
+      # début et fin de la période
+      encadrement_periode <- de_periodifier(as.Date(str_extract(giraph_select(), '[^/]+$')), input$echelle)
+      
+      cat('deb:', as.character(encadrement_periode$deb), 'fin:', as.character(encadrement_periode$fin), '\n')
       
       tab <- RV$df_identifie %>%
-        filter(if(select_classe == 'NA') is.na(classe) else classe == select_classe | super_classe == select_classe,
-               Date >= deb, Date < fin) %>%
+        filter(if(select_Classe == 'NA') is.na(Classe) else Classe == select_Classe | Super_Classe == select_Classe,
+               Date >= encadrement_periode$deb, Date <= encadrement_periode$fin) %>%
         arrange(desc(Debit)) %>%
         mutate(Date = as.character(Date)) %>%
         select(Date, libelle, Debit, Compte)
@@ -347,7 +366,7 @@ server <- function(input, output) {
   tab <- reactive({
     
     if(input$data_shown == 'Resume_trimestriel')
-      tab <- RV$df_resume_trimestre %>%
+      tab <- df_resume_periode() %>%
         mutate(trimestre = as.character(trimestre))
     
     if(input$data_shown == 'Releve_de_comptes_categorises')
