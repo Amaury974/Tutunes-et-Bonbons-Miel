@@ -23,6 +23,7 @@ rm(list=ls()); gc() ; options(warn = 1)
 dir_projet <- 'D:/apis_/Documents/R/Analyse des comptes bancaire TBM/'
 dir_scripts <- paste0(dir_projet, 'Git Tutunes et Bonbon Miel/Fichiers_application/Scripts')
 dir_data <- paste0(dir_projet, 'Data')
+dir_fig <- paste0(dir_projet, 'Figures')
 
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####                    Init. Dépendances                    #####
@@ -80,7 +81,8 @@ releve <- f_diff_extraction(all_dir)
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
 setwd(dir_data)
-df_classif <- read.csv2('Classification_dépenses.csv')
+df_classif <- read.csv2('Classification_dépenses.csv')%>%
+  mutate(Date = as.Date(Date, format = '%d/%m/%Y'))
 
 
 
@@ -98,8 +100,8 @@ setwd(dir_data)
 df_identifie <- read.csv2('Releve_de_comptes_categorises.csv') %>%
   mutate(Date = as.Date(Date))
 
-df_resume_trimestre <- f_resume_trimestre(df_identifie)
-list_col <- f_couleurs(df_resume_trimestre)
+df_resume_periode <- f_resume(df_identifie, 'Semestre')
+list_col <- f_couleurs(df_resume_periode)
 
 
 #,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#
@@ -109,21 +111,30 @@ list_col <- f_couleurs(df_resume_trimestre)
 
 #************************************************************************************#
 #''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''#
-call('BonbonMiel_unique_giraph', df_resume_trimestre=df_resume_trimestre, list_col=list_col) %>%
-  eval()
+setwd(dir_fig)
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####                   Graph . Bonbons Miel                  #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
-BonbonMiel_unique_giraph(df_resume_trimestre, list_col)
+Gro_BonbonMiel(df_resume_periode, list_col)
 
-BonbonMiel_trimestriel_giraph(df_resume_trimestre, list_col)
+Ti_BonbonMiel(df_resume_periode, list_col)
 
+
+
+# TEST
+i="An"
+for( i in c('Mois', 'Trimestre', 'Semestre', 'An')){
+df_resume_periode <- f_resume(df_identifie, i)
+
+Ti_BonbonMiel(df_resume_periode, list_col) %>%
+htmltools::save_html(str_c("BonbonMiel_",i,".html"))
+}
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####            Graph . evolution des dépense                #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
-Courbe_empile_giraph(df_resume_trimestre, list_col)
+Courbe_empile_giraph(df_resume_periode, list_col)
 
 
 

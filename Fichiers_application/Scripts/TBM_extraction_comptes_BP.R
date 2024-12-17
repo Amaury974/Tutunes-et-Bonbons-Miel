@@ -16,6 +16,7 @@
 
 # dir_PDF <- "./releve_CCP2006014Y038_20240812.pdf"
 # dir_PDF=dir
+# dir_PDF= 'D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Data/releve_CCP2006014Y038_20241112.pdf'
 
 extraction_Poste <- function(dir_PDF){
   # print(dir_PDF)
@@ -65,14 +66,14 @@ extraction_Poste <- function(dir_PDF){
     str_split('(?<=((\\s)|(_SAUT_DE_LIGNE_))\\d{2}/\\d{2}\\s)') %>%
     as.data.frame() %>%
     t() %>%
-    as_tibble()
+    as_tibble(.name_repair = 'minimal') # nimporte, de toute façon on les force juste après. uniquement là pour cacher le message d'avis
   
   # print(PDF_3)
   
   names(PDF_3) <- c('Date', 'reste')
   
   PDF_3 <- PDF_3 %>%
-    filter(!Date %in% c('',' ')) %>%
+    filter(str_trim(Date) != "") %>%
     as.data.frame()
   
   # print('av')
