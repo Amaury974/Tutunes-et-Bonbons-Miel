@@ -74,7 +74,7 @@ source('TBM_util.R')
 
 all_dir <- loca_dossier(dir_data,'\\d{7}')
 releve <- f_diff_extraction(all_dir)
-
+releve2=releve
 
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####            Init. Classification des dépenses            #####
@@ -97,7 +97,7 @@ write.csv2(df_identifie, 'Releve_de_comptes_categorises.csv')
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
 setwd(dir_data)
-df_identifie <- read.csv2('Releve_de_comptes_categorises.csv') %>%
+df_identifie <- read.csv2('Releve_de_comptes_categorises(2).csv') %>%
   mutate(Date = as.Date(Date))
 
 df_resume_periode <- f_resume(df_identifie, 'Semestre')
@@ -135,6 +135,19 @@ htmltools::save_html(str_c("BonbonMiel_",i,".html"))
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
 Courbe_empile_giraph(df_resume_periode, list_col)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

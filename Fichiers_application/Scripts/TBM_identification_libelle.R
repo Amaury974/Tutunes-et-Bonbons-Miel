@@ -42,10 +42,11 @@ fun_classif <- function(releve, df_classif){
   # on ne compare que les libellés avec les bonnes dates
   
   df_id_exception <- filter(df_classif, !is.na(Date_id))
-  
+  i=2
   for(i in (0:nrow(df_id_exception))[-1]){
     bonne_date <- df_identifie$Date == df_id_exception[i, 'Date_id'] & !is.na(df_identifie$Date)
-    df_identifie[bonne_date, 'Marqueur'] <- paste(str_extract(toupper(df_identifie[bonne_date, 'libelle']), df_id_exception[i,'Marqueur']), df_id_exception[i, 'Date_id'])
+    bon_marqueur <- str_detect(toupper(df_identifie[bonne_date, 'libelle']), df_id_exception[i,'Marqueur'])
+    df_identifie[bonne_date & bon_marqueur, 'Marqueur'] <- str_c(df_id_exception[i,'Marqueur'], df_id_exception[i, 'Date_id'])
   }
   
   df_classif <- df_classif %>%

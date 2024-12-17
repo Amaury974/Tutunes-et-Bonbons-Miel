@@ -8,8 +8,8 @@
 # encoding UTF8
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
 
-
-
+# dir="D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Data/Relevés/HistoriqueOperations_018720443542_du_01_01_2023_au_31_12_2023.csv"
+# dir="D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Data/Relevés/HistoriqueOperations_018720443542_du_05_10_2023_au_05_11_2024.csv"
 
 extraction_Fortuneo <- function(dir, .force_compte = NULL){
   # ~~~~{    Importation    }~~~~

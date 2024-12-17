@@ -150,7 +150,7 @@ server <- function(input, output) {
     content = function(file) {
       cat('>> Identification > Download Classif\n\n')
       RV$dir_identification_download <- file
-      df_classif %>%
+      RV$df_classif %>%
         mutate(Date = format(Date, '%d/%m/%Y')) %>%
       write.csv2(file, row.names = FALSE)
     }
@@ -177,7 +177,7 @@ server <- function(input, output) {
       cat("                ajout d'une ligne :")
       print(Nv_ligne)
       
-      df_classif <<- bind_rows(df_classif, Nv_ligne)
+      df_classif <<- bind_rows(RV$df_classif, Nv_ligne)
     }
     
     
