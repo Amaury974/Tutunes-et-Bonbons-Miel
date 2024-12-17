@@ -74,7 +74,7 @@ source('TBM_util.R')
 
 all_dir <- loca_dossier(dir_data,'\\d{7}')
 releve <- f_diff_extraction(all_dir)
-releve2=releve
+# releve2=releve
 
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####            Init. Classification des dépenses            #####
@@ -90,17 +90,20 @@ df_identifie <- fun_classif(releve, df_classif)
 
 
 setwd(dir_data)
-write.csv2(df_identifie, 'Releve_de_comptes_categorises.csv')
+write.csv2(df_identifie, 'Releve_de_comptes_categorises(2).csv')
 
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####              Init. Manipulation des tableaux            #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
 setwd(dir_data)
+# donnee <- readRDS('save.RDS')
+# df_identifie <- donnee$df_identifie
+
 df_identifie <- read.csv2('Releve_de_comptes_categorises(2).csv') %>%
   mutate(Date = as.Date(Date))
 
-df_resume_periode <- f_resume(df_identifie, 'Semestre')
+df_resume_periode <- f_resume(df_identifie, 'Trimestre')
 list_col <- f_couleurs(df_resume_periode)
 
 
@@ -140,7 +143,7 @@ Courbe_empile_giraph(df_resume_periode, list_col)
 
 
 
-
+filter(df_identifie, is.na(Date))
 
 
 

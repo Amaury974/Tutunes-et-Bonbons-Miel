@@ -14,16 +14,7 @@
 
 
 f_resume <- function(df_identifie, echelle = 'Semestre'){
-  
-  # print('str(df_identifie)') 
-  # print(str(df_identifie))
-  # 
-  # print('summary(df_identifie)')
-  # print(summary(df_identifie))
-  
-  
-  
-  
+ 
   # ~~~~{    Summarize    }~~~~
   
   # print(df_identifie)
@@ -62,31 +53,6 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
     right_join(resume_periode, by = 'periode')
   
   
-  
-  # # ~~~~{    Périodes incomplètes ?    }~~~~
-  # Test_periode <- data.frame(periode = unique(resume_periode$periode)) # date centrale de toutes les périodes représentées dans le résumé
-  # 
-  # Test_periode[,c('deb', 'fin')] <- de_periodifier(Test_periode$periode, echelle) # dates du début et de la fin de chaque période
-  # 
-  # Test_periode$deb <- periodifier(Test_periode$deb, 'Mois', 'Date') # date du centre du mois de début puis de la fin de chaque période
-  # Test_periode$fin <- periodifier(Test_periode$fin, 'Mois', 'Date')
-  # 
-  # 
-  # tous_les_mois <- unique(periodifier(unique(df_identifie$Date), 'Mois', 'Date')) # date du centre de chaque mois représentés dans les données
-  # 
-  # Test_periode$deb_ok <- Test_periode$deb %in% tous_les_mois
-  # Test_periode$fin_ok <- Test_periode$fin %in% tous_les_mois
-    
-    
-  
-  
-  
-  
-  
-  summary(resume_periode)
-  
-  
-  
   # ~~~~{    Classement des dépenses par Super_Classe (primaire)    }~~~~
   ordre_resume_sup <-resume_periode %>%
     group_by(Super_Classe) %>%
@@ -108,96 +74,10 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
     select(Super_Classe, Classe, periode, Debit, Label_periode)
   
   
-  # ~~~~{    Périodes incomplètes ?    }~~~~
-  
-  
-  
   # # ~~~~{    Ménage    }~~~~
   # rm(list = c('ordre_resume_sup', 'resume_periode'))
   
 }
-
-
-#  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
-#####                   Synthèse par Trimestres                  #####
-#  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
-
-# f_resume_trimestre <- function(df_identifie){
-#   
-#   # print('str(df_identifie)') 
-#   # print(str(df_identifie))
-#   # 
-#   # print('summary(df_identifie)')
-#   # print(summary(df_identifie))
-#   
-#   
-#   
-#   
-#   # ~~~~{    Summarize    }~~~~
-#   
-#   # print(df_identifie)
-#   df_identifie2 <- filter(df_identifie, (Super_Classe != '' | is.na(Super_Classe))) %>%
-#     mutate(Classe = str_c(Super_Classe, '_', Classe))
-#   
-#   resume_trim <- df_identifie2 %>%
-#     mutate(trimestre = ceiling(as.numeric(format(Date, '%m'))/3),
-#            trimestre = as.Date(paste(format(Date, '%Y'),3*trimestre-1, '15', sep='-'))) %>%
-#     group_by(Super_Classe, Classe, trimestre) %>%
-#     summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
-#     ungroup()
-#   
-#   # ~~~~{    Toutes les Classes représentées tous les trimestres    }~~~~
-#   resume_trim <- expand.grid(Classe = unique(resume_trim$Classe),
-#                              trimestre = unique(resume_trim$trimestre)) %>%
-#     mutate(Super_Classe = str_extract(Classe, '^[^_]+'),
-#            Debit = 0) %>%
-#     bind_rows(resume_trim) %>%
-#     arrange(desc(Debit)) %>%
-#     distinct(Classe, trimestre, .keep_all = TRUE)
-#   
-#   
-#   
-#   
-#   # ~~~~{    Mise en forme noms trimestres    }~~~~
-#   
-#   # '2023-11-15' => 'Oct. Nov. Dec. 2023 \n 7500 €'
-#   
-#   resume_trim <- resume_trim %>%
-#     group_by(trimestre) %>%
-#     summarize(Total = round(sum(Debit))) %>%
-#     arrange(trimestre) %>%
-#     mutate(Label_Trimestre = paste(format(trimestre -30, '%b'), format(trimestre , '%b'), format(trimestre +30, '%b'), format(trimestre, '%Y'), '\n', Total, '€'),
-#            Label_Trimestre = factor(Label_Trimestre, unique(Label_Trimestre))) %>%
-#     select(-Total) %>%
-#     right_join(resume_trim, by = 'trimestre')
-#   
-#   
-#   
-#   
-#   # ~~~~{    Classement des dépenses par Super_Classe (primaire)    }~~~~
-#   ordre_resume_sup <-resume_trim %>%
-#     group_by(Super_Classe) %>%
-#     summarize(ordre_sup = -sum(Debit, na.rm = TRUE)/sd(Debit/mean(Debit))) # les dépenses très variables sont pénalisées
-#   
-#   # ~~~~{    Classement des dépenses par Classe (secondaire)    }~~~~
-#   
-#   df_resume_trimestre <-
-#     resume_trim %>%
-#     group_by(Super_Classe, Classe) %>%
-#     summarize(ordre_inf = -sum(Debit, na.rm = TRUE)/sd(Debit/mean(Debit))) %>%
-#     ungroup() %>%
-#     left_join(ordre_resume_sup, by = join_by(Super_Classe)) %>%
-#     left_join(resume_trim, by = join_by(Super_Classe, Classe)) %>%  # + Debit, trimestres
-#     arrange(ordre_sup, ordre_inf) %>%
-#     mutate(Super_Classe = factor(Super_Classe, unique(Super_Classe)),
-#            Classe = str_extract(Classe,'[^_]+$'), # on retire la super Classe de la Classe
-#            Classe = factor(Classe, unique(Classe))) %>%
-#     select(Super_Classe, Classe, trimestre, Debit, Label_Trimestre)
-#   
-#   # # ~~~~{    Ménage    }~~~~
-#   # rm(list = c('ordre_resume_sup', 'resume_trim'))
-#   
-# }
 
 
 #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
