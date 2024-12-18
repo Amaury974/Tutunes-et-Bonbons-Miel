@@ -75,6 +75,7 @@ source('TBM_util.R')
 all_dir <- loca_dossier(dir_data,'\\d{7}')
 releve <- f_diff_extraction(all_dir)
 # releve2=releve
+# releve=releve2
 
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####            Init. Classification des dépenses            #####
@@ -141,9 +142,18 @@ Courbe_empile_giraph(df_resume_periode, list_col)
 
 
 
+test=df_identifie %>%
+  filter(Classe == 'general', str_detect(libelle, 'AUCHAN')) %>%
+  arrange(-Debit)
 
 
-filter(df_identifie, is.na(Date))
+
+test$libelle[str_detect(test$libelle, 'AUCHAN (?=CAR)')]
+test$libelle[str_detect(test$libelle, 'AUCHAN (?!CAR)')]
+
+# releve=filter(releve, Date > as.Date('2023-05-01'), Debit > 600)
+
+
 
 
 

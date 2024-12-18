@@ -566,7 +566,7 @@ radar <- function(df_resume_periode, list_col){
   
   
   
-  # myplot <-
+  myplot <-
   df_plot %>%
     arrange(periode) %>%
     ggplot(aes(x = Debit,
@@ -579,10 +579,6 @@ radar <- function(df_resume_periode, list_col){
     coord_polar("y") 
     
     guides(color = 'none')
-  
-  
-  
-  
   
   
   
