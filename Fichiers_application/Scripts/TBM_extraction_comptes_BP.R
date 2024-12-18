@@ -16,7 +16,7 @@
 
 # dir_PDF <- "./releve_CCP2006014Y038_20240812.pdf"
 # dir_PDF=dir
-# dir_PDF= "D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Data/Relevés/releve_CCP2006014Y038_20220412.pdf" 
+# dir_PDF= "D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Data/Relevés/releve_CCP2006014Y038_20240112.pdf" 
 
 extraction_Poste <- function(dir_PDF){
   # print(dir_PDF)
@@ -24,8 +24,9 @@ extraction_Poste <- function(dir_PDF){
   # for(dir in all_dir)
   PDF_1 <- pdf_text(dir_PDF)
   
-  Annee <- str_extract(PDF_1, '20\\d{2}')[1]
+  Annee <- str_extract(PDF_1[1], '20\\d{2}') %>% as.numeric()
   
+  janvier <- str_detect(PDF_1[1], 'janvier 20\\d{2}\\n\\n') # si janvier, alors le decembre n'est pas de la bonne année
   
   
   
@@ -87,12 +88,15 @@ extraction_Poste <- function(dir_PDF){
   # print('anne')
   # print(Annee)
   
-  PDF_3$Date <- PDF_3$Date %>%
+  # format date, de 23/05 à 2023-05-23
+    Dates <- PDF_3$Date %>%
     str_remove_all(' ') %>%
-    str_remove_all('_SAUT_DE_LIGNE_') %>%
-    paste0('/', Annee) %>%
+    str_remove_all('_SAUT_DE_LIGNE_') 
+    
+    Dates <- paste0(Dates, '/', if_else(janvier & str_extract(Dates, '\\d{2}$') == '12', Annee-1, Annee)) %>% # problème du relevé de janvier qui comporte les lignes de fin décembre de l'année rprécedente
     as.Date(format = '%d/%m/%Y')
-  
+    
+    PDF_3$Date <- Dates
   # print('ap')
   
   # print(PDF_3)

@@ -141,12 +141,9 @@ quel_periode <- function(label){
   if(str_detect(label[[1]], 'à')) return('Semestre')
   if(str_detect(label[[1]], '\\.')) return('Trimestre')
   if(str_detect(label[[1]], '^\\d')) return('An')
-  if(str_detect(label[[1]], 'à')) return('Mois')
+  if(str_detect(label[[1]], '^\\w+.\\d{4}')) return('Mois')
   NA
 }
-
-
-
 
 
 
@@ -157,6 +154,9 @@ format_plotmath <- function(Date){
   str_c('paste(',str_extract(j, '.'), ',', str_extract(j, '.$'), '/', str_extract(m, '.'), ',', str_extract(m, '.$'),')')
   
 }
+
+
+
 
 
 

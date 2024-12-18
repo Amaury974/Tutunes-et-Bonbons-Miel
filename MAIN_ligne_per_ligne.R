@@ -104,7 +104,7 @@ setwd(dir_data)
 df_identifie <- read.csv2('Releve_de_comptes_categorises(2).csv') %>%
   mutate(Date = as.Date(Date))
 
-df_resume_periode <- f_resume(df_identifie, 'Trimestre')
+df_resume_periode <- f_resume(df_identifie, 'Mois')
 list_col <- f_couleurs(df_resume_periode)
 
 
@@ -116,9 +116,8 @@ list_col <- f_couleurs(df_resume_periode)
 #************************************************************************************#
 #''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''#
 setwd(dir_fig)
-#  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
-#####                   Graph . Bonbons Miel                  #####
-#  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
+
+Verification_donnees(df_resume_periode, list_col, df_identifie)
 
 Gro_BonbonMiel(df_resume_periode, list_col)
 
@@ -134,29 +133,12 @@ df_resume_periode <- f_resume(df_identifie, i)
 Ti_BonbonMiel(df_resume_periode, list_col) %>%
 htmltools::save_html(str_c("BonbonMiel_",i,".html"))
 }
-#  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
-#####            Graph . evolution des dépense                #####
-#  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
-
-Courbe_empile_giraph(df_resume_periode, list_col)
-
-
-
-test=df_identifie %>%
-  filter(Classe == 'general', str_detect(libelle, 'AUCHAN')) %>%
-  arrange(-Debit)
-
-
-
-test$libelle[str_detect(test$libelle, 'AUCHAN (?=CAR)')]
-test$libelle[str_detect(test$libelle, 'AUCHAN (?!CAR)')]
-
-# releve=filter(releve, Date > as.Date('2023-05-01'), Debit > 600)
 
 
 
 
 
+# filter(releve, Date == max(Date))
 
 
 
