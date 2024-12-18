@@ -8,7 +8,108 @@
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
 
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
-#####                 Graph . BonbonMiel              #####
+#####             Graph . Vérification des données            #####
+#  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
+
+
+
+Verification_donnees <- function(df_resume_periode, list_col, df_identifie){
+  
+  echelle <- quel_periode(label = df_resume_periode[1,"Label_periode"])
+  
+  
+  df_verif <- df_identifie %>%
+    # select(Date, Compte) %>%
+    arrange(Date) %>%
+    mutate(periode = periodifier(Date, echelle, 'Court'),
+           periode = factor(periode, unique(periode)),
+           Mois = format(Date, '%m')) %>%
+    group_by(periode, Compte) %>%
+    summarize(N_ligne = length(unique(Date)),
+              Date_min = min(Date),
+              Date_max = max(Date),
+              nbr_mois = length(unique(Mois))) %>%
+    ungroup() %>%
+    # mutate(couleur_periode = nbr_mois == max(nbr_mois),
+    #        nbr_mois = if_else(couleur_periode, as.character(nbr_mois), str_c('bold(underline(',nbr_mois,'))'))) %>%
+    group_by(Compte) %>%
+    mutate(couleur_lignes = abs(N_ligne - mean(N_ligne))/mean(N_ligne),
+           couleur_lignes = case_when(couleur_lignes > 0.6 ~ 'FALSE', couleur_lignes > 0.3 ~ 'suspect', .default = 'TRUE')) %>%
+    
+    mutate(# nombre de mois
+      couleur_duree = nbr_mois == max(nbr_mois), # si une periode a moins de mois, elle est problablement tronquée 
+      nbr_mois = if_else(couleur_duree, as.character(nbr_mois), str_c('bold(underline(',nbr_mois,'))'))) %>%
+    ungroup() %>%
+    mutate( # date du debut
+      couleur_deb = Date_min - de_periodifier(periodifier( Date_min, echelle,'Date' ), echelle)$deb  ,
+      couleur_deb = case_when(couleur_deb > 10 ~ 'FALSE', couleur_deb > 5 ~ 'suspect', .default = 'TRUE'),
+      label_deb = str_c('phantom(',nbr_mois, '~mois~du)~',format_plotmath(Date_min)),
+      
+      # date de fin
+      couleur_fin = de_periodifier(periodifier( Date_max, echelle,'Date' ), echelle)$fin - Date_max,
+      couleur_fin = case_when(couleur_fin > 10 ~ 'FALSE', couleur_fin > 5 ~ 'suspect', .default = 'TRUE'),
+      label_fin = str_c('phantom(', nbr_mois, '~mois~du~',format_plotmath(Date_min),'~au)~', format_plotmath(Date_max)),
+      
+      label_periode =  str_c(nbr_mois, 'mois~du', format_plotmath(Date_min), 'au', format_plotmath(Date_max), sep = '~'))
+  
+  
+  # couleur_debu=with(df_verif2, Date_min - de_periodifier(periodifier( Date_min, echelle,'Date' ), echelle)$deb)
+  # case_when(couleur_debu > 10 ~ 'FALSE', couleur_debu > 5 ~ 'suspect', .default = 'TRUE')
+  # 
+  # 
+  # de_periodifier(periodifier(df_verif$Date_min, echelle,'Date'))
+  
+  
+  
+  # estetique
+  df_verif <- df_verif %>%
+    mutate(an = str_extract(periode, '.{4}'))
+  
+  # colone période
+  df_verif$base_Y <- 1:nrow(df_verif)
+  
+  df_verif <- df_verif %>%
+    group_by(periode) %>%
+    mutate(Y_periode = mean(base_Y))
+  
+  
+  myplot <-
+    ggplot(df_verif) +
+    geom_rect(aes(ymin = base_Y -0.5, ymax = base_Y +0.5, fill = periode), xmin = 0.9, xmax = 10, alpha = 0.25) +
+    geom_text(aes(label = periode,  y = Y_periode), x = 1, hjust = 0) + #color = an,
+    geom_text(aes(label = Compte,  y = base_Y), x = 2, hjust = 0) + #color = Compte,
+    
+    # label periode
+    geom_text(aes(label =label_periode, y = base_Y), x = 6, hjust = 0, parse = TRUE) +
+    #       nbr mois
+    geom_text(aes(label =nbr_mois, color = couleur_duree, y = base_Y), x = 6, hjust = 0, parse = TRUE) +
+    #       date du debut
+    geom_text(aes(label = label_deb, color = couleur_deb, y = base_Y), x = 6, hjust = 0, parse = TRUE) +
+    geom_text(aes(label = label_fin, color = couleur_fin, y = base_Y), x = 6, hjust = 0, parse = TRUE) +
+    
+    
+    
+    
+    geom_text(aes(label = paste(N_ligne, 'lignes'), y = base_Y, color = couleur_lignes), x = 9, hjust = 0) +
+    
+    scale_color_manual(values = c('TRUE' = 'black', 'FALSE' = 'red', 'suspect' = 'gold2')) +
+    guides(color = 'none', fill = 'none') +
+    theme_void() +
+    xlim(c(0, 11)) +
+    scale_y_reverse()
+  
+  
+  
+  girafe(ggobj = myplot,
+         bg = "transparent",
+         height_svg = nrow(df_verif)*0.5,
+         width_svg = 10,)
+  
+  
+}
+
+#  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
+#####                        BonbonMiel                       #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
 # ~~~~{    Unique    }~~~~
@@ -152,8 +253,15 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
   # 
   # (48648/5464)/65484
   # 48648/(5464*65484)
-  N_col <- length(unique(df_bbm_periode$periode_an))
+  # print('ICI_1')
+  # 
+
+  echelle <- quel_periode(df_resume_periode$Label_periode)
   
+  N_col <- if( echelle != 'An' ) length(unique(df_bbm_periode$periode_an)) else length(unique(df_bbm_periode$an))
+  N_lig <- if( echelle != 'An' ) length(unique(df_bbm_periode$an)) else 1
+  
+  # print('ICI_2')
   
   myplot <-
     ggplot(df_bbm_periode) +
@@ -180,8 +288,9 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
     
     scale_fill_manual(values = list_col) +
     
+    # total € au milieu
     geom_text(aes(label = str_extract(Label_periode, '\\d+ €$')),
-              x = 0, y = 0)+ # size = ifelse(N_col>10, 7, 11), size.unit = 'pt'
+              # x = 0, y = 0)#, size = 10, size.unit = 'pt')+ # size = ifelse(N_col>10, 7, 11)
     guides(fill = 'none') +
     
     
@@ -189,23 +298,18 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
     xlim(c(0, 1.5+hsize)) +
     theme_void() + 
     theme(strip.text.y = element_text( angle = 270, vjust = 1),
-          strip.text.x = element_text( vjust = 1),
-          
-          panel.background = element_rect(fill='transparent', color=NA), #transparent panel bg
-          plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
-          legend.background = element_rect(fill='transparent', color=NA), #transparent legend bg
-          legend.box.background = element_rect(fill='transparent', color=NA))
-  # size = 12,
-  
-  # Ajout des labels sauf si l'echelle est le mois
-  if(N_col<10)
-    myplot <- myplot +
-    geom_text(data = df_bbm_lab, 
-              aes(y     = ylab, 
-                  label = Classe, 
-                  hjust = hjust_dir, 
-                  vjust = vjust_dir), 
-              x    = 1.6 + hsize)
+          strip.text.x = element_text( vjust = 1))
+
+  # # Ajout des labels sauf si l'echelle est le mois
+  # if(N_col<10)
+  #   myplot <- myplot +
+  #   geom_text(data = df_bbm_lab, 
+  #             aes(y     = ylab, 
+  #                 label = Classe, 
+  #                 hjust = hjust_dir, 
+  #                 vjust = vjust_dir), 
+  #             x    = 1.6 + hsize, 
+  #             size = 7, size.unit = 'pt')
   
   # grille si annee ou autre
   if(is.na(first(df_bbm_periode$periode_an))){ # echelle == annee
@@ -215,12 +319,15 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
   }
   
   
+  # print('ICI_3')
   
   
-  interactive_plot <- girafe(ggobj      = myplot,
+  interactive_plot <- girafe(ggobj = myplot,
                              bg = "transparent",
-                             height_svg = 2*length(unique(df_bbm_periode$an)),
-                             width_svg  = max(10,N_col*2),
+                             height_svg = N_lig * 2,
+                             width_svg  = N_col * 2,
+                             # height_svg = 2*length(unique(df_bbm_periode$an)),
+                             # width_svg  = max(10,N_col*2),
                              # pointsize  = 5,
                              options    = list(
                                opts_hover(css = "filter: brightness(95%)"),
@@ -238,7 +345,7 @@ BonbonMiel_trimestriel_giraph <- Ti_BonbonMiel
 
 
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
-#####                   Graph . histogramme                   #####
+#####                       histogramme                       #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
 # ~~~~{    Par periode    }~~~~
@@ -368,11 +475,13 @@ histogramme_Classe <- function(df_resume_periode, list_col){
 }
 histogramme_Classe_giraph <- histogramme_Classe
 
+
+
+
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
-#####            Graph . evolution des dépense                #####
+#####                   Les graphs pas ouf                    #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
-# ~~~~{    GGirafe    }~~~~
 
 Courbe_empile <- function(df_resume_periode, list_col){
   
@@ -424,99 +533,87 @@ Courbe_empile <- function(df_resume_periode, list_col){
   # htmltools::save_html(interactive_plot, "Courbe_empile.html")
 }
 
-Courbe_empile_giraph <- Courbe_empile
 
 
-
-#  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
-#####               Graph . Test des données                #####
-#  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
-
-
-
-Verification_donnees <- function(df_resume_periode, list_col, df_identifie){
+radar <- function(df_resume_periode, list_col){
   
   echelle <- quel_periode(label = df_resume_periode[1,"Label_periode"])
-  # 
-  print(echelle)
-  # 
   
   
-  # # ~~~~{    Nombre de comptes d'origine    }~~~~
-  # df_identifie %>%
-  #   select(Date, Compte) %>%
-  #   mutate(periode = periodifier(Date, echelle, 'Court')) %>%
-  #   group_by(periode) %>%
-  #   summarize(N_releves = length(unique(Compte)))
+  # ggplot ne comprend pas la jointure entre les deux bouts du cercle
+  annees <- unique(df_resume_periode$periode) %>%
+    format('%Y') %>%
+    unique()
   
-  # ~~~~{    Nombre de lignes de dépense    }~~~~
+  annees_chevauche <- annees[-1]
   
-  df_verif <- df_identifie %>%
-    # select(Date, Compte) %>%
-    arrange(Date) %>%
-    mutate(periode = periodifier(Date, echelle, 'Court'),
-           periode = factor(periode, unique(periode)),
-           Mois = format(Date, '%m')) %>%
-    group_by(periode, Compte) %>%
-    summarize(N_ligne = length(unique(Date)),
-              Date_min = min(Date),
-              date_max = max(Date),
-              nbr_mois = length(unique(Mois))) %>%
-    ungroup() %>%
-    mutate(couleur_periode = nbr_mois == max(nbr_mois),
-           nbr_mois = if_else(couleur_periode, as.character(nbr_mois), str_c('bold(underline(',nbr_mois,'))'))) %>%
-    group_by(Compte) %>%
-    mutate(couleur_lignes = abs(N_ligne - mean(N_ligne))/mean(N_ligne),
-           couleur_lignes = case_when(couleur_lignes > 0.3 ~ 'FALSE', couleur_lignes > 0.1 ~ 'suspect', .default = 'TRUE'),
-           lab_date = )
-  
-  # estetique
-  df_verif <- df_verif %>%
-    mutate(an = str_extract(periode, '.{4}'))
-  
-  # colone période
-  df_verif$base_Y <- 1:nrow(df_verif)
-  
-  df_verif <- df_verif %>%
-    group_by(periode) %>%
-    mutate(Y_periode = mean(base_Y))
+  deb_janv_chev <- annees_chevauche %>%
+    str_c('-01-01') %>%
+    as.Date()
   
   
-  myplot <- ggplot(df_verif) +
-    geom_rect(aes(ymin = base_Y -0.5, ymax = base_Y +0.5, fill = periode), xmin = 0.9, xmax = 10, alpha = 0.2) +
-    geom_text(aes(label = periode,  y = Y_periode), x = 1, hjust = 0) + #color = an,
-    geom_text(aes(label = Compte,  y = base_Y), x = 2, hjust = 0) + #color = Compte,
-    geom_text(aes(label = str_c(nbr_mois, 'mois~du', format_plotmath(Date_min), 'au', format_plotmath(date_max), sep = '~'), color = couleur_periode, y = base_Y), x = 6, hjust = 0, parse = TRUE) +
-    geom_text(aes(label = paste(N_ligne, 'lignes'), y = base_Y, color = couleur_lignes), x = 9, hjust = 0) +
+  # les debuts et fins d'année problématiques avec leurs périodes
+  df_jointures1 <- data.frame(deb_janv = deb_janv_chev) %>%
+    mutate(fin_dec = deb_janv-1,
+           periode_deb = periodifier(deb_janv, echelle, 'Date'),
+           periode_fin = periodifier(fin_dec, echelle, 'Date'))
+  
+  # pour toutes les classes
+  df_jointures2 <- expand.grid(deb_janv=df_jointures1$deb_janv, Classe=unique(df_resume_periode$Classe)) %>%
+    left_join(df_jointures1)
+  
+  
+  # ajout des débits
+  # pour la première période de l'année
+  df_jointures2 <- df_resume_periode %>%
+    select(periode_deb = periode, Debit_janv = Debit, Classe) %>%
+    right_join(df_jointures2)
+  
+  # pour la dernière période de l'année
+  df_jointures2 <- df_resume_periode %>%
+    select(periode_fin = periode, Debit_dec = Debit, Classe) %>%
+    right_join(df_jointures2)
+  
+  # Debit de jointure = moyenne des deux
+  df_jointures2 <- df_jointures2 %>%
+    mutate(Debit = (Debit_janv+Debit_dec)/2)
+  
+  # lignes à ajouter
+  df_jointures_fin <- df_jointures2 %>%
+    select(periode=fin_dec, Classe, Debit)
+  
+  df_jointures_deb <- df_jointures2 %>%
+    select(periode=deb_janv, Classe, Debit)
+  
+  
+  # jointure
+  df_plot <- bind_rows(df_resume_periode, df_jointures_fin, df_jointures_deb) %>%
+    mutate(an = format(periode, '%Y'),
+           periode_an = une_annee(periode, mois_deb = 0))
+  
+  
+  
+  
+  
+  
+  myplot <-
+    df_plot %>%
+    arrange(periode) %>%
+    ggplot(aes(x = Debit,
+               y = periode_an,
+               color = Classe,
+               group = str_c(Classe,an))) +
+    geom_path(linewidth = 1) +
+    scale_color_manual(values = unlist(list_col)) +
     
-    scale_color_manual(values = c('TRUE' = 'black', 'FALSE' = 'red', 'suspect' = 'darkorange')) +
-    guides(color = 'none', fill = 'none') +
-    theme_void() +
-    xlim(c(0, 11)) +
-    scale_y_reverse()
+    coord_polar("y") 
+  
+  guides(color = 'none')
   
   
-  
-  girafe(ggobj = myplot,
-         bg = "transparent",
-         height_svg = nrow(df_verif),
-         width_svg = 10,)
   
   
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

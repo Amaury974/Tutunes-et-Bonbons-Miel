@@ -150,7 +150,7 @@ server <- function(input, output) {
     content = function(file) {
       cat('>> Identification > Download Classif\n\n')
       RV$dir_identification_download <- file
-      df_classif %>%
+      RV$df_classif %>%
         mutate(Date = format(Date, '%d/%m/%Y')) %>%
       write.csv2(file, row.names = FALSE)
     }
@@ -177,7 +177,7 @@ server <- function(input, output) {
       cat("                ajout d'une ligne :")
       print(Nv_ligne)
       
-      df_classif <<- bind_rows(df_classif, Nv_ligne)
+      df_classif <<- bind_rows(RV$df_classif, Nv_ligne)
     }
     
     
@@ -297,7 +297,7 @@ server <- function(input, output) {
     cat('>> Graphiques > graphique _ 1\n')
     cat('      ', input$typeGraph, '\n',
         '      ', input$echelle,'\n',
-        '      ', input$periode_subset[1],'à', input$periode_subset[2], '\n')
+        '      ', as.character(input$periode_subset[1]),'à', as.character(input$periode_subset[2]), '\n')
     
     df_resume <- filter(df_resume_periode(),
                         periode >= periodifier(input$periode_subset[1], input$echelle, 'Date'),

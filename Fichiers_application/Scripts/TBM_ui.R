@@ -266,7 +266,7 @@ ui <- navbarPage(
       ),
       
       # ~~~~{    Graphique    }~~~~
-      girafeOutput('graph', height = '700px', width = '100%'),
+      girafeOutput('graph'), #height = '700px', width = '100%'),
       
       # ~~~~{    tableau détail selectionné    }~~~~
       h3('Lignes sélectionnées'),
