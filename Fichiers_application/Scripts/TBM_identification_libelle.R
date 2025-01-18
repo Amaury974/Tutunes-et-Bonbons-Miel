@@ -19,11 +19,30 @@ fun_classif <- function(releve, df_classif){
   
   # print(releve)
   
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  #####                     Priorité et amorti                     #####
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  
+  
   df_classif2 <- rename(df_classif, Date_id = Date) %>% # permet de joindre sans tenir compte de la date
-    mutate(priorite = str_extract(Marqueur, '^\\d(?=/)'), # extrait l'indicateur de priorite au debut du marqueur ex: 1//AUCHAN CAR -> 1
+    mutate(regle = str_extract(Marqueur, '^[^//]*\\d(?=/)'), # extrait l'indicateur de priorite au debut du marqueur ex: 1//AUCHAN CAR -> 1
+           priorite = str_extract(regle, '^\\d'),
+           amorti_mois = as.numeric2(str_extract(regle, '(?<=AMORTI)\\d+'))*12,
            Marqueur = str_extract(Marqueur, '[^//]+$')) %>% # retire les indicateurs de priorité ex : 1//AUCHAN CAR -> AUCHAN CAR
     arrange(priorite) %>%
-    select(-priorite)
+    select(-c(regle, priorite))
+  
+  
+  
+  # filter(df_classif2, !is.na(regle))
+  
+  
+  
+  # df_classif2 <- rename(df_classif, Date_id = Date) %>% # permet de joindre sans tenir compte de la date
+  #   mutate(priorite = str_extract(Marqueur, '^\\d(?=/)'), # extrait l'indicateur de priorite au debut du marqueur ex: 1//AUCHAN CAR -> 1
+  #          Marqueur = str_extract(Marqueur, '[^//]+$')) %>% # retire les indicateurs de priorité ex : 1//AUCHAN CAR -> AUCHAN CAR
+  #   arrange(priorite) %>%
+  #   select(-priorite)
   
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   #####                        Identification                      #####
@@ -60,14 +79,47 @@ fun_classif <- function(releve, df_classif){
   # ~~~~{    verification des doublons    }~~~~
   # à faire
   
-  # ~~~~{    synthèse    }~~~~
+  # ~~~~{    jointure    }~~~~
   
   
-  df_identifie <- df_identifie %>%
-    left_join(df_classif2, by = join_by(Marqueur)) %>%
-    select('Date', 'libelle', 'Debit', 'Compte', 'Marqueur', 'Classe', 'Super_Classe')
+  df_identifie2 <- df_identifie %>%
+    left_join(df_classif2, by = join_by(Marqueur)) 
   
-  df_identifie
+  
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  #####                           Amortis                      #####
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  
+  df_a_amortir <- filter(df_identifie2, !is.na(amorti_mois)) %>%
+    mutate(Debit = Debit / amorti_mois) %>%
+    as.data.frame()
+  
+  
+  df_amorti <- mutate(df_a_amortir, Debit = 0)
+  
+  i=1
+  for(i in (0:nrow(df_a_amortir))[-1]){
+    # j=1
+    for(j in 1:df_a_amortir[i, "amorti_mois"]-1){
+      df_amorti_i <- df_a_amortir[i,]
+      
+      M <- as.numeric(format(df_amorti_i$Date, '%m')) + j
+      Y <- as.numeric(format(df_amorti_i$Date, '%Y')) + floor((M-1)/12)
+      M <- 1+(M-1) %% 12
+      
+      df_amorti_i$Date <- as.Date(str_c(Y, M, '01', sep = '-')) # amorti le 1er du mois, c'est plus sûr.
+      df_amorti <- bind_rows(df_amorti, df_amorti_i)
+    }
+  }
+  
+  df_identifie2 <- filter(df_identifie2, is.na(amorti_mois)) %>%
+    bind_rows(df_amorti)
+  
+  
+  
+  
+  select(df_identifie2, 'Date', 'libelle', 'Debit', 'Compte', 'Marqueur', 'Classe', 'Super_Classe')
+  
 }
 
 

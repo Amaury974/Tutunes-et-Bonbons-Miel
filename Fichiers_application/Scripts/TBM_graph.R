@@ -290,7 +290,7 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
     
     # total € au milieu
     geom_text(aes(label = str_extract(Label_periode, '\\d+ €$')),
-              # x = 0, y = 0)#, size = 10, size.unit = 'pt')+ # size = ifelse(N_col>10, 7, 11)
+              x = 0, y = 0) +#, size = 10, size.unit = 'pt')+ # size = ifelse(N_col>10, 7, 11)
     guides(fill = 'none') +
     
     

@@ -367,7 +367,7 @@ server <- function(input, output) {
     
     if(input$data_shown == 'Resume_trimestriel')
       tab <- df_resume_periode() %>%
-        mutate(trimestre = as.character(trimestre))
+        mutate(periode = as.character(periode))
     
     if(input$data_shown == 'Releve_de_comptes_categorises')
       tab <- RV$df_identifie %>%
