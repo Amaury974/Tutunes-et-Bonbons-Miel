@@ -26,7 +26,8 @@ needed_packages <- c(#'Rtools', # utilisé par certains packages
   'colorspace', #nuances de couleurs au sein des super classes
   'ggiraph', # interactivité des graphiques
   'shiny', # application
-  'DT' # tableaux interactifs, modifiables
+  'DT', # tableaux interactifs, modifiables
+  'shinyWidgets'
   # 'shinyFiles' # chargement des fichiers non securisé mais laissant une trace de l'emplacement
 )
 

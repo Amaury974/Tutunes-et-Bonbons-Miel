@@ -73,7 +73,7 @@ f_diff_extraction <- function(dir, .dir_name=dir){
     mutate(Jour_Doublon = TRUE) %>%
     select(-c(Depense_unique, Depense_tt)) %>%
     ungroup() %>%
-    right_join(releve) %>%
+    right_join(releve, by = join_by(Compte, Date)) %>%
     group_by(Compte, Date, libelle, Debit) %>%
     mutate(Ligne_Doublon = cumsum(!is.na(Debit))) %>% # cumsum de n'importe quoi
     filter(Ligne_Doublon == 1 | is.na(Jour_Doublon)) %>%

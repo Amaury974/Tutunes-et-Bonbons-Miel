@@ -47,13 +47,26 @@ server <- function(input, output) {
   observeEvent(input$dir_sauvegarde, {
     cat('>> Direction Sauvegarde\n\n')
     dir_sauvegarde <<- input$dir_sauvegarde
+   
+    
   })
   
   observeEvent(input$save, {
-    cat('>> Sauvegarde\n\n')
-    try(saveRDS(list(df_classif=RV$df_classif, df_identifie=RV$df_identifie), file = dir_sauvegarde))
+    cat('>> Sauvegarde _ 1\n')
+    print(dir_sauvegarde)
+    test_sauvegarde <- try(saveRDS(list(df_classif=RV$df_classif, df_identifie=RV$df_identifie), file = dir_sauvegarde))
+    print(test_sauvegarde)
+    if(!inherits(test_sauvegarde, "try-error")) {
+      cat('            _ Succès\n')
+      print(getwd())
+      cat('Emplacement du fichier de sauvegarde', dir_sauvegarde, file = 'Source/direction_sauvegarde.txt', sep = '\n')
+    }
+    
+    cat('              _ fin\n\n')
+    
   })
   
+
   #--------------------------------------------------------------------#
   #####                     __ Importation                         #####
   #--------------------------------------------------------------------#
@@ -281,14 +294,37 @@ server <- function(input, output) {
   
   
   # ~~~~{    Mise à jour de la taille du curseur de dates    }~~~~
-  observeEvent(RV$df_identifie, {
-    MIN <- min(RV$df_identifie$Date, na.rm = TRUE)
-    MAX <- max(RV$df_identifie$Date, na.rm = TRUE)
-    updateSliderInput(inputId = 'periode_subset', 
-                      min = MIN, 
-                      max = MAX,
-                      value = c(MIN, MAX)
-    )
+  # observeEvent(RV$df_identifie, {
+  #   MIN <- min(RV$df_identifie$Date, na.rm = TRUE)
+  #   MAX <- max(RV$df_identifie$Date, na.rm = TRUE)
+  #   updateSliderInput(inputId = 'periode_subset', 
+  #                     min = MIN, 
+  #                     max = MAX,
+  #                     value = c(MIN, MAX)
+  #   )
+  # })
+  # ~~~~{    Periode par defaut    }~~~~
+  
+  observeEvent(df_resume_periode(), {
+    cat('>> Graphiques > Periode par defaut _ 1\n')
+    
+    CHOICES <- periodifier(df_resume_periode()$periode, input$echelle, 'Court') %>%
+      unique()
+    
+    cat('Tous les choix :', str_c(CHOICES, sep=' ; '), '\n')
+    
+    SELECTED <- Periode_defaut(df_resume_periode(), RV$df_identifie)
+    
+    cat('Bornes pré-selectionnées :', str_c(SELECTED, sep=' ; '),'\n')
+    
+    cat('                                   _ 2\n')
+    
+    updateSliderTextInput(inputId = 'periode_subset', 
+                          choices = CHOICES,
+                          selected =  SELECTED
+                          )
+    cat('                                   _ fin\n\n')
+    
   })
   
   
@@ -299,12 +335,13 @@ server <- function(input, output) {
         '      ', input$echelle,'\n',
         '      ', as.character(input$periode_subset[1]),'à', as.character(input$periode_subset[2]), '\n')
     
+
     df_resume <- filter(df_resume_periode(),
-                        periode >= periodifier(input$periode_subset[1], input$echelle, 'Date'),
-                        periode <= periodifier(input$periode_subset[2], input$echelle, 'Date'))
+                        periode >= periodifier_Court_to_Date(input$periode_subset[1], echelle = input$echelle),
+                        periode <= periodifier_Court_to_Date(input$periode_subset[2], echelle = input$echelle))
     
     plot <- NULL
-    
+    cat('                          _ 2\n')
     # df_resume <- df_resume_periode()
     if(input$typeGraph == 'Verification_donnees') plot <- Verification_donnees(df_resume, list_col(), RV$df_identifie) else {
     if(!is.null(input$typeGraph))
