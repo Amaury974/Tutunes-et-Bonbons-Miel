@@ -148,12 +148,64 @@ f_couleurs <- function(df_resume_periode){
 
 
 
+#  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+#####                           Période                          #####
+#  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+
+
+Periode_defaut <- function(df_resume_periode, df_identifie){
+  
+echelle <- quelle_periode(label = df_resume_periode[1,"Label_periode"])
+
+
+df_verif <- df_identifie %>%
+  # select(Date, Compte) %>%
+  arrange(Date) %>%
+  mutate(periode = periodifier(Date, echelle, 'Court'),
+         periode = factor(periode, unique(periode)),
+         Mois = format(Date, '%m')) %>%
+  group_by(periode, Compte) %>%
+  summarize(N_ligne = length(Date),
+            Date_min = min(Date),
+            Date_max = max(Date),
+            nbr_mois = length(unique(Mois))) %>%
+  ungroup() %>%
+  # mutate(couleur_periode = nbr_mois == max(nbr_mois),
+  #        nbr_mois = if_else(couleur_periode, as.character(nbr_mois), str_c('bold(underline(',nbr_mois,'))'))) %>%
+  group_by(Compte) %>%
+  mutate(couleur_lignes = abs(N_ligne - mean(N_ligne))/mean(N_ligne),
+         couleur_lignes = case_when(couleur_lignes > 0.6 ~ 'FALSE', couleur_lignes > 0.3 ~ 'suspect', .default = 'TRUE')) %>%
+  
+  mutate(# nombre de mois
+    couleur_duree = nbr_mois == max(nbr_mois)) %>% # si une periode a moins de mois, elle est problablement tronquée 
+    # nbr_mois = if_else(couleur_duree, as.character(nbr_mois), str_c('bold(underline(',nbr_mois,'))'))) %>%
+  ungroup() %>%
+  mutate( # date du debut
+    couleur_deb = Date_min - de_periodifier(periodifier( Date_min, echelle,'Date' ), echelle)$deb  ,
+    # couleur_deb = case_when(couleur_deb > 10 ~ 'FALSE', couleur_deb > 5 ~ 'suspect', .default = 'TRUE'),
+    # label_deb = str_c('phantom(',nbr_mois, '~mois~du)~',format_plotmath(Date_min)),
+    
+    # date de fin
+    couleur_fin = de_periodifier(periodifier( Date_max, echelle,'Date' ), echelle)$fin - Date_max)
+    # couleur_fin = case_when(couleur_fin > 10 ~ 'FALSE', couleur_fin > 5 ~ 'suspect', .default = 'TRUE'),
+    # label_fin = str_c('phantom(', nbr_mois, '~mois~du~',format_plotmath(Date_min),'~au)~', format_plotmath(Date_max)),
+    
+    # label_periode =  str_c(nbr_mois, 'mois~du', format_plotmath(Date_min), 'au', format_plotmath(Date_max), sep = '~'))
 
 
 
+Periode_out <- df_verif %>%
+  group_by(periode) %>%
+  summarise(ok_deb_fin = !any(couleur_deb > 10 | couleur_fin > 10)) %>%
+  filter(ok_deb_fin) %>%
+  pull(periode)
+
+if(length(Periode_out) == 0) Periode_out <- unique(df_verif$periode)
 
 
+as.character(c(first(Periode_out), last(Periode_out)))
 
+}
 
 
 

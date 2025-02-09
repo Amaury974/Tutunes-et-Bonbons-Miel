@@ -24,28 +24,6 @@
 #####                    Init. Dépendances                    #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
-# ~~~~{    chargement des packages    }~~~~
-cat('>> Chargement Packages \n\n')
-
-needed_packages <- c(#'Rtools', # utilisé par certains packages
-  'dplyr', # manipulation de données / tableaux
-  'stringr', # manipulation de chaines de caractères
-  'pdftools', #lecture de pdf : relevés de compte banque postale
-  'tidyr', # manipulation de données / tableaux
-  'ggplot2', # graphiques
-  'colorspace', #nuances de couleurs au sein des super classes
-  'ggiraph', # interactivité des graphiques
-  'shiny', # application
-  'DT' # tableaux interactifs, modifiables
-  # 'shinyFiles' # chargement des fichiers non securisé mais laissant une trace de l'emplacement
-)
-
-
-install.packages(setdiff(needed_packages, rownames(installed.packages())))
-
-
-for(pack_i in needed_packages)
-  require(pack_i, character.only = TRUE, quietly = TRUE, warn.conflicts = FALSE)
 
 
 # options dpyr
@@ -73,8 +51,11 @@ setwd('Scripts')
 # print(getwd())
 
 source('TBM_diff_extraction.R')
+source('TBM_extraction_comptes_BP_pdf.R')
 source('TBM_extraction_comptes_BP.R')
+source('TBM_extraction_comptes_SG.R')
 source('TBM_extraction_comptes_Fortuneo.R')
+
 source('TBM_identification_libelle.R')
 source('TBM_manipulation_tableaux.R')
 source('TBM_graph.R')

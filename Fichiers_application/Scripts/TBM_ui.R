@@ -229,15 +229,21 @@ ui <- navbarPage(
         column(2),
         
         column(2,
+               sliderTextInput(inputId = "periode_subset",
+                               label = "Période visualisée",
+                               choices = letters, 
+                               selected = c('a','z')
+                               )
                
-               sliderInput(
-                 inputId = "periode_subset",
-                 label = "Période visualisée",
-                 min = deb.Trimestre(Sys.Date()-360), # sera mis à jour lorsqu'on importe des données
-                 max = deb.Trimestre(Sys.Date()),     # idem
-                 value = c(deb.Trimestre(Sys.Date()-360), deb.Trimestre(Sys.Date())),
-                 step = 30
-               )
+               
+               # sliderInput(
+               #   inputId = "periode_subset",
+               #   label = "Période visualisée",
+               #   min = deb.Trimestre(Sys.Date()-360), # sera mis à jour lorsqu'on importe des données
+               #   max = deb.Trimestre(Sys.Date()),     # idem
+               #   value = c(deb.Trimestre(Sys.Date()-360), deb.Trimestre(Sys.Date())),
+               #   step = 30
+               # )
         ), 
         column(2,
                selectInput(

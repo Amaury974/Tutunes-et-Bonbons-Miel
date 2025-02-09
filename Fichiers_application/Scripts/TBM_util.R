@@ -44,6 +44,10 @@ deb.Trimestre <- function(Date = Sys.Date(), fin = FALSE) {
 #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
 #####             Determine la période pour groupage             #####
 #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+
+
+# as.Date('2024-07-01')
+
 periodifier <- function(Date, echelle = c('Mois', 'Trimestre', 'Semestre', 'An')[2], format = c('Court', 'Date', 'Long')[1]){
   
   # ~~~~{    Par mois    }~~~~
@@ -92,6 +96,37 @@ periodifier <- function(Date, echelle = c('Mois', 'Trimestre', 'Semestre', 'An')
   NA
 }
 
+# periodifier_Court_to_Date(periodifier(Date = Sys.Date(), echelle='Semestre', format='Court'), echelle = 'Semestre')
+# Label = periodifier(Date = Sys.Date(), echelle='Semestre', format='Court')
+
+periodifier_Court_to_Date <- function(Label, echelle){
+  
+  if(echelle == 'Mois'){
+    An <- str_extract(Label, '^\\d{4}')
+    Mois <- as.numeric(str_extract(Label, '\\d+$'))
+    Date_Centre <- as.Date(str_c(An, Mois, '15', sep = '-'))
+  }
+  
+  if(echelle == 'Trimestre'){
+    An <- str_extract(Label, '^\\d{4}')
+    Mois <- 3*as.numeric(str_extract(Label, '\\d+$'))-1
+    Date_Centre <- as.Date(str_c(An, Mois, '15', sep = '-'))
+  }
+  
+  if(echelle == 'Semestre'){
+    An <- str_extract(Label, '^\\d{4}')
+    Mois <- 6*as.numeric(str_extract(Label, '\\d+$'))-2
+    Date_Centre <- as.Date(str_c(An, Mois, '01', sep = '-'))
+  }
+  
+  if(echelle == 'An'){
+    An <- str_extract(Label, '^\\d{4}')
+    Date_Centre <- as.Date(str_c(An, 7, '01', sep = '-'))
+  }
+  
+  Date_Centre
+}
+
 
 # for(i in c('Mois', 'Trimestre', 'Semestre', 'An'))
 #   for(j in c('Court', 'Date', 'Long'))
@@ -100,6 +135,7 @@ periodifier <- function(Date, echelle = c('Mois', 'Trimestre', 'Semestre', 'An')
 # CentrePeriode = periodifier(Date = Sys.Date(), echelle = 'Semestre', format = 'Date')
 # 
 # f_encadrement(CentrePeriode,'Semestre')
+# CentrePeriode=as.Date('2024-07-01')
 
 de_periodifier <- function(CentrePeriode, echelle = c('Mois', 'Trimestre', 'Semestre', 'An')[2]){
   
@@ -126,7 +162,7 @@ de_periodifier <- function(CentrePeriode, echelle = c('Mois', 'Trimestre', 'Seme
   # ~~~~{    Par an    }~~~~
   if(echelle == 'An'){
     deb <- as.Date(paste0(format(CentrePeriode , '%Y-'), '01-01'))
-    fin <- as.Date(paste0(format(CentrePeriode, '%Y-'), '12-31'))-1
+    fin <- as.Date(paste0(format(CentrePeriode, '%Y-'), '12-31'))
   }
   
   list(deb = deb, fin = fin)
@@ -136,8 +172,7 @@ de_periodifier <- function(CentrePeriode, echelle = c('Mois', 'Trimestre', 'Seme
 
 
 
-
-quel_periode <- function(label){
+quelle_periode <- function(label){
   if(str_detect(label[[1]], 'à')) return('Semestre')
   if(str_detect(label[[1]], '\\.')) return('Trimestre')
   if(str_detect(label[[1]], '^\\d')) return('An')
@@ -145,7 +180,7 @@ quel_periode <- function(label){
   NA
 }
 
-
+quel_periode <- quelle_periode
 
 format_plotmath <- function(Date){
   

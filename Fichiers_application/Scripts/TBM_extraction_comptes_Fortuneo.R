@@ -1,5 +1,5 @@
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-# Objectif : Extraction et pré-formatage du classeur de relevé de 
+# Objectif : Extraction et pré-formatage des extraction de 
 #            compte Fortuneo
 # 
 # A.Jorant - Nov 2024

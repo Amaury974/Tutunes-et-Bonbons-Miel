@@ -15,7 +15,7 @@
 
 Verification_donnees <- function(df_resume_periode, list_col, df_identifie){
   
-  echelle <- quel_periode(label = df_resume_periode[1,"Label_periode"])
+  echelle <- quelle_periode(label = df_resume_periode[1,"Label_periode"])
   
   
   df_verif <- df_identifie %>%
@@ -25,7 +25,7 @@ Verification_donnees <- function(df_resume_periode, list_col, df_identifie){
            periode = factor(periode, unique(periode)),
            Mois = format(Date, '%m')) %>%
     group_by(periode, Compte) %>%
-    summarize(N_ligne = length(unique(Date)),
+    summarize(N_ligne = length(Date),
               Date_min = min(Date),
               Date_max = max(Date),
               nbr_mois = length(unique(Mois))) %>%
@@ -73,7 +73,16 @@ Verification_donnees <- function(df_resume_periode, list_col, df_identifie){
     mutate(Y_periode = mean(base_Y))
   
   
-  myplot <-
+  
+  # cadre sélection
+  selectionnees <- data.frame(periode = periodifier(range(df_resume_periode$periode), echelle, format = 'Court')) %>%
+    left_join(select(df_verif, periode, base_Y), by = join_by(periode)) %>%
+    pull(base_Y) %>%
+    range()
+  
+  
+  
+  graph_verif <-
     ggplot(df_verif) +
     geom_rect(aes(ymin = base_Y -0.5, ymax = base_Y +0.5, fill = periode), xmin = 0.9, xmax = 10, alpha = 0.25) +
     geom_text(aes(label = periode,  y = Y_periode), x = 1, hjust = 0) + #color = an,
@@ -81,16 +90,20 @@ Verification_donnees <- function(df_resume_periode, list_col, df_identifie){
     
     # label periode
     geom_text(aes(label =label_periode, y = base_Y), x = 6, hjust = 0, parse = TRUE) +
-    #       nbr mois
+    # nbr mois
     geom_text(aes(label =nbr_mois, color = couleur_duree, y = base_Y), x = 6, hjust = 0, parse = TRUE) +
-    #       date du debut
+    # date du debut
     geom_text(aes(label = label_deb, color = couleur_deb, y = base_Y), x = 6, hjust = 0, parse = TRUE) +
     geom_text(aes(label = label_fin, color = couleur_fin, y = base_Y), x = 6, hjust = 0, parse = TRUE) +
     
-    
-    
-    
+    # nombre de ligne dans les relevés
     geom_text(aes(label = paste(N_ligne, 'lignes'), y = base_Y, color = couleur_lignes), x = 9, hjust = 0) +
+    
+    # cadre autour de la période sélectionnée
+    annotate(geom = 'rect', 
+             ymin = selectionnees[1]-0.5, ymax = selectionnees[2]+0.5,
+             xmin = 0.9, xmax = 10, 
+             alpha = 0, color = 'grey50', size = 1)+
     
     scale_color_manual(values = c('TRUE' = 'black', 'FALSE' = 'red', 'suspect' = 'gold2')) +
     guides(color = 'none', fill = 'none') +
@@ -100,7 +113,7 @@ Verification_donnees <- function(df_resume_periode, list_col, df_identifie){
   
   
   
-  girafe(ggobj = myplot,
+  girafe(ggobj = graph_verif,
          bg = "transparent",
          height_svg = nrow(df_verif)*0.5,
          width_svg = 10,)
@@ -255,7 +268,7 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
   # 48648/(5464*65484)
   # print('ICI_1')
   # 
-
+  
   echelle <- quel_periode(df_resume_periode$Label_periode)
   
   N_col <- if( echelle != 'An' ) length(unique(df_bbm_periode$periode_an)) else length(unique(df_bbm_periode$an))
@@ -290,7 +303,7 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
     
     # total € au milieu
     geom_text(aes(label = str_extract(Label_periode, '\\d+ €$')),
-              # x = 0, y = 0)#, size = 10, size.unit = 'pt')+ # size = ifelse(N_col>10, 7, 11)
+              x = 0, y = 0) +#, size = 10, size.unit = 'pt')+ # size = ifelse(N_col>10, 7, 11)
     guides(fill = 'none') +
     
     
@@ -299,7 +312,7 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
     theme_void() + 
     theme(strip.text.y = element_text( angle = 270, vjust = 1),
           strip.text.x = element_text( vjust = 1))
-
+  
   # # Ajout des labels sauf si l'echelle est le mois
   # if(N_col<10)
   #   myplot <- myplot +
