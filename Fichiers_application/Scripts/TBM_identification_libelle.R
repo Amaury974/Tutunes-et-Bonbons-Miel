@@ -2,8 +2,8 @@
 # Objectif : Identification des libellées de dépenses issus de relevé de comptes et 
 #            catégorisation
 
-#     IN : releve[c('Date', 'libelle', 'Debit', 'Compte')]
-#     OUT: df_identifie[c('Date', 'libelle', 'Debit', 'Compte', 'Marqueur', 'Classe', 'Super_Classe')]
+#     IN : releve[c('Date', 'libelle', 'Montant', 'Compte')]
+#     OUT: df_identifie[c('Date', 'libelle', 'Montant', 'Compte', 'Marqueur', 'Classe', 'Super_Classe')]
 
 # A.Jorant - Nov 2024
 
@@ -91,11 +91,11 @@ fun_classif <- function(releve, df_classif){
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   
   df_a_amortir <- filter(df_identifie2, !is.na(amorti_mois)) %>%
-    mutate(Debit = Debit / amorti_mois) %>%
+    mutate(Montant = Montant / amorti_mois) %>%
     as.data.frame()
   
   
-  df_amorti <- mutate(df_a_amortir, Debit = 0)
+  df_amorti <- mutate(df_a_amortir, Montant = 0)
   
   i=1
   for(i in (0:nrow(df_a_amortir))[-1]){
@@ -118,7 +118,7 @@ fun_classif <- function(releve, df_classif){
   
   
   
-  select(df_identifie2, 'Date', 'libelle', 'Debit', 'Compte', 'Marqueur', 'Classe', 'Super_Classe')
+  select(df_identifie2, 'Date', 'libelle', 'Montant', 'Compte', 'Marqueur', 'Classe', 'Super_Classe')
   
 }
 

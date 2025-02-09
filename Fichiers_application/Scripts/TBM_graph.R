@@ -126,29 +126,34 @@ Verification_donnees <- function(df_resume_periode, list_col, df_identifie){
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
 # ~~~~{    Unique    }~~~~
-Gro_BonbonMiel <- function(df_resume_periode, list_col){
+Gro_BonbonMiel <- function(df_resume_periode, list_col, sens = 'Debit'){
   print('bbm unique')
   hsize = 3
   
-  df_camembert <- df_resume_periode %>%
+  df_bbm_periode_0 <- if(sens == 'Debit') filter(df_resume_periode, Montant < 0) else filter(df_resume_periode, Montant > 0)
+  
+  
+  
+  df_camembert <- df_bbm_periode_0 %>%
+    mutate(Montant = abs(Montant)) %>%
     group_by(Super_Classe, Classe) %>%
-    summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+    summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
     ungroup() %>%
     
     arrange(Classe) %>%
-    mutate(ylab = cumsum(Debit)-0.5*Debit,
+    mutate(ylab = cumsum(Montant)-0.5*Montant,
            Classe_num = as.numeric(Classe),
-           Classe_label = paste(Classe,'\n', round(Debit), '€')) %>%
+           Classe_label = paste(Classe,'\n', round(Montant), '€')) %>%
     group_by(Super_Classe) %>%
-    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Debit)), '€')) %>%
+    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€')) %>%
     as.data.frame()
   
   df_camembert_lab <- df_camembert %>%
     group_by(Super_Classe) %>%
-    summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+    summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
     ungroup() %>%
-    mutate(total = sum(Debit)) %>%
-    mutate(ylab = cumsum(Debit)-0.5*Debit,
+    mutate(total = sum(Montant)) %>%
+    mutate(ylab = cumsum(Montant)-0.5*Montant,
            hjust_dir = 0.5-sinpi(2*ylab/total)/2,
            vjust_dir = 0.5-cospi(2*ylab/total)/2) %>%
     mutate(Super_Classe = ifelse(is.na(Super_Classe), 'NA', as.character(Super_Classe)))
@@ -161,7 +166,7 @@ Gro_BonbonMiel <- function(df_resume_periode, list_col){
     
     # bande externe : superClasse
     geom_bar_interactive(aes(x = 1.2+hsize,
-                             y = Debit,
+                             y = Montant,
                              fill = Super_Classe,
                              tooltip = Super_Classe_label,
                              data_id = Super_Classe),
@@ -169,7 +174,7 @@ Gro_BonbonMiel <- function(df_resume_periode, list_col){
     
     # bande interne : Classe
     geom_bar_interactive(aes(x = hsize, 
-                             y = Debit,
+                             y = Montant,
                              fill = Classe,
                              tooltip=Classe_label, 
                              data_id = Classe),
@@ -212,7 +217,7 @@ BonbonMiel_unique_giraph <- Gro_BonbonMiel
 
 # ~~~~{    Par periode    }~~~~
 
-Ti_BonbonMiel <- function(df_resume_periode, list_col){
+Ti_BonbonMiel <- function(df_resume_periode, list_col, sens = 'Debit'){
   hsize = 3
   
   # ordre dans lequel on veut voir apparaitre les colonnes du graphiques : periode sans l'année
@@ -222,15 +227,18 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
   )
   
   
+  df_bbm_periode_0 <- if(sens == 'Debit') filter(df_resume_periode, Montant < 0) else filter(df_resume_periode, Montant > 0)
   
-  df_bbm_periode <- df_resume_periode %>%
+  
+  df_bbm_periode <- df_bbm_periode_0 %>%
+    mutate(Montant = abs(Montant)) %>%
     group_by(periode) %>%
     arrange(Classe) %>% # les Classes sont des facteurs ordonnées selon le cout total de leurs Super_Classes respectives
-    mutate(Classe_label = paste(Classe,'\n', round(Debit), '€'), # utilisé quand on passe la souris sur une zone
+    mutate(Classe_label = paste(Classe,'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
            Classe_periode = paste0(Classe,'/',periode)) %>%      # utilisé pour identifier les zones
     
     group_by(Super_Classe, periode) %>%
-    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Debit)), '€'), # utilisé quand on passe la souris sur une marge
+    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
            Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%           # utilisé pour identifier les zones
     mutate(an = format(periode, '%Y'),
            periode_an = str_trim(str_extract(Label_periode, '^.{4}\\D+')), # on isole la premiere partie du Label, avant l'année
@@ -240,10 +248,10 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
   
   df_bbm_lab <- df_bbm_periode %>%
     # group_by(Super_Classe, Label_periode, periode) %>%
-    # summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+    # summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
     group_by(Label_periode) %>%
-    mutate(total_trim = sum(Debit)) %>%
-    mutate(ylab = cumsum(Debit)-0.5*Debit) %>%
+    mutate(total_trim = sum(Montant)) %>%
+    mutate(ylab = cumsum(Montant)-0.5*Montant) %>%
     # décallage en fonction de la position dans le cercle
     ungroup() %>%
     mutate(max_total = max(total_trim),
@@ -254,15 +262,15 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
            periode_an = str_trim(str_extract(Label_periode, '^.{4}\\D+')), # on isole la premiere partie du Label, avant l'année
            periode_an = factor(periode_an, ordre_factor_periodes)) %>%
     # retrait des trop petites Classes pour eviter les chevauchements de label
-    # filter(Debit > 0.02*max_total)
-    mutate(Super_Classe = str_c(signif(Debit / (0.02*max_total), 3),
+    # filter(Montant > 0.02*max_total)
+    mutate(Super_Classe = str_c(signif(Montant / (0.02*max_total), 3),
                                 signif(pmax(0.3, abs(2*vjust_dir-1)),3),
-                                signif((Debit / (0.02*max_total)) / pmax(0.3, abs(2*vjust_dir-1)) ,3), sep = ' ')) %>%
-    # filter(((Debit / (0.02*max_total)) / pmax(0.2, abs(2*vjust_dir-1))) > 1)
-    filter((Debit / (0.08*max_total*pmax(0.2, abs(2*vjust_dir-1)))) > 1)
+                                signif((Montant / (0.02*max_total)) / pmax(0.3, abs(2*vjust_dir-1)) ,3), sep = ' ')) %>%
+    # filter(((Montant / (0.02*max_total)) / pmax(0.2, abs(2*vjust_dir-1))) > 1)
+    filter((Montant / (0.08*max_total*pmax(0.2, abs(2*vjust_dir-1)))) > 1)
   
-  # ((Debit / a) / 2*pmax(0.2, abs(2*vjust_dir-1)))
-  # (Debit / (a*2*pmax(0.2, abs(2*vjust_dir-1))))
+  # ((Montant / a) / 2*pmax(0.2, abs(2*vjust_dir-1)))
+  # (Montant / (a*2*pmax(0.2, abs(2*vjust_dir-1))))
   # 
   # (48648/5464)/65484
   # 48648/(5464*65484)
@@ -281,7 +289,7 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
     
     # bande externe : superClasse
     geom_bar_interactive(aes(x       = 1.2 + hsize,
-                             y       = Debit,
+                             y       = Montant,
                              fill    = Super_Classe,
                              tooltip = Super_Classe_label,
                              data_id = Super_Classe_periode),
@@ -291,7 +299,7 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col){
     
     # bande interne : Classe
     geom_bar_interactive(aes(x       = hsize, 
-                             y       = Debit,
+                             y       = Montant,
                              fill    = Classe,
                              tooltip = Classe_label, 
                              data_id = Classe_periode),
@@ -362,7 +370,7 @@ BonbonMiel_trimestriel_giraph <- Ti_BonbonMiel
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
 # ~~~~{    Par periode    }~~~~
-histogramme_periode <- function(df_resume_periode, list_col){
+histogramme_periode <- function(df_resume_periode, list_col, sens= 'Debit'){
   
   # ordre dans lequel on veut voir apparaitre les colonnes du graphiques : periode sans l'année
   ordre_factor_periodes <- c(format(as.Date(str_c('01-', 1:12,'-2000')),'%B'), # tous les mois
@@ -370,14 +378,19 @@ histogramme_periode <- function(df_resume_periode, list_col){
                              'janvier à juin', 'juiller à décembre' # semestres
   )
   
-  df_bbm_periode <- df_resume_periode %>%
+  
+  df_bbm_periode_0 <- if(sens == 'Debit') filter(df_resume_periode, Montant < 0) else filter(df_resume_periode, Montant > 0)
+  
+  
+  df_bbm_periode <- df_bbm_periode_0 %>%
+    mutate(Montant = abs(Montant)) %>%
     group_by(periode) %>%
     arrange(Classe) %>% # les Classes sont des facteurs ordonnées selon le cout total de leurs Super_Classes respectives
-    mutate(Classe_label = paste(Classe,'\n', round(Debit), '€'), # utilisé quand on passe la souris sur une zone
+    mutate(Classe_label = paste(Classe,'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
            Classe_periode = paste0(Classe,'/',periode)) %>%      # utilisé pour identifier les zones
     
     group_by(Super_Classe, periode) %>%
-    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Debit)), '€'), # utilisé quand on passe la souris sur une marge
+    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
            Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%           # utilisé pour identifier les zones
     mutate(an = format(periode, '%Y'),
            periode_an = str_trim(str_extract(Label_periode, '^.{4}\\D+')), # on isole la premiere partie du Label, avant l'année
@@ -387,7 +400,7 @@ histogramme_periode <- function(df_resume_periode, list_col){
   myplot <-
     ggplot(df_bbm_periode) +
     geom_bar_interactive(aes(x = Classe, 
-                             y = Debit,
+                             y = Montant,
                              fill = Classe,
                              tooltip=Classe_label, 
                              data_id = Classe_periode),
@@ -427,26 +440,31 @@ histogramme_trimestriel_giraph <- histogramme_periode
 
 
 # ~~~~{    Un seul graphique, mêmes Classes côte à côte    }~~~~
-histogramme_Classe <- function(df_resume_periode, list_col){
+histogramme_Classe <- function(df_resume_periode, list_col, sens = 'Debit'){
   hsize = 3
   # df_bbm_periode[1,"Label_periode"]
   
   
-  df_bbm_periode <- df_resume_periode %>%
+  
+  df_bbm_periode_0 <- if(sens == 'Debit') filter(df_resume_periode, Montant < 0) else filter(df_resume_periode, Montant > 0)
+  
+  
+  df_bbm_periode <- df_bbm_periode_0 %>%
+    mutate(Montant = abs(Montant)) %>%
     arrange(Classe) %>%
     mutate(Label_periode = str_c(format(periode, '%Y'),' T',round(as.numeric(format(periode, '%m'))/3)),
            sC_C = str_c(Super_Classe, '_', Classe),
            sC_C = factor(sC_C, unique(sC_C))) %>%
     group_by(Super_Classe, Classe, sC_C, Label_periode, periode) %>%
-    summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+    summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
     
     group_by(Label_periode) %>%
     arrange(sC_C) %>%
-    mutate(Classe_label = paste(Label_periode, sC_C,'\n', round(Debit), '€'),
+    mutate(Classe_label = paste(Label_periode, sC_C,'\n', round(Montant), '€'),
            Classe_periode = paste0(Classe,'/',periode)) %>%
     
     group_by(Super_Classe, periode) %>%
-    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Debit)), '€'),
+    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€'),
            Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%
     mutate(an = str_extract(Label_periode, '\\d{4}'),
            periode_an = str_trim(str_extract(Label_periode, '^\\D+')),
@@ -457,7 +475,7 @@ histogramme_Classe <- function(df_resume_periode, list_col){
   myplot <-
     ggplot(df_bbm_periode) +
     geom_bar_interactive(aes(x = sC_C, 
-                             y = Debit,
+                             y = Montant,
                              fill = Label_periode,
                              tooltip=Classe_label, 
                              data_id = Classe_periode),
@@ -486,6 +504,7 @@ histogramme_Classe <- function(df_resume_periode, list_col){
   # htmltools::save_html(interactive_plot, "BonbonMiel_trimestriel.html")
   
 }
+
 histogramme_Classe_giraph <- histogramme_Classe
 
 
@@ -509,11 +528,11 @@ Courbe_empile <- function(df_resume_periode, list_col){
     mutate(Super_Classe = factor(Super_Classe, fact_SC),
            Classe = factor(Classe, fact_C)) %>%
     group_by(Super_Classe, Classe, periode) %>%
-    summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+    summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
     group_by(periode) %>%
     arrange(Super_Classe, Classe) %>%
-    mutate(YMAX = cumsum(Debit),
-           YMIN = YMAX - Debit)  %>%
+    mutate(YMAX = cumsum(Montant),
+           YMIN = YMAX - Montant)  %>%
     as_tibble()
   
   list_col$'_NA' <- 'grey45'
@@ -579,24 +598,24 @@ radar <- function(df_resume_periode, list_col){
   # ajout des débits
   # pour la première période de l'année
   df_jointures2 <- df_resume_periode %>%
-    select(periode_deb = periode, Debit_janv = Debit, Classe) %>%
+    select(periode_deb = periode, Montant_janv = Montant, Classe) %>%
     right_join(df_jointures2)
   
   # pour la dernière période de l'année
   df_jointures2 <- df_resume_periode %>%
-    select(periode_fin = periode, Debit_dec = Debit, Classe) %>%
+    select(periode_fin = periode, Montant_dec = Montant, Classe) %>%
     right_join(df_jointures2)
   
-  # Debit de jointure = moyenne des deux
+  # Montant de jointure = moyenne des deux
   df_jointures2 <- df_jointures2 %>%
-    mutate(Debit = (Debit_janv+Debit_dec)/2)
+    mutate(Montant = (Montant_janv+Montant_dec)/2)
   
   # lignes à ajouter
   df_jointures_fin <- df_jointures2 %>%
-    select(periode=fin_dec, Classe, Debit)
+    select(periode=fin_dec, Classe, Montant)
   
   df_jointures_deb <- df_jointures2 %>%
-    select(periode=deb_janv, Classe, Debit)
+    select(periode=deb_janv, Classe, Montant)
   
   
   # jointure
@@ -612,7 +631,7 @@ radar <- function(df_resume_periode, list_col){
   myplot <-
     df_plot %>%
     arrange(periode) %>%
-    ggplot(aes(x = Debit,
+    ggplot(aes(x = Montant,
                y = periode_an,
                color = Classe,
                group = str_c(Classe,an))) +
@@ -624,9 +643,281 @@ radar <- function(df_resume_periode, list_col){
   guides(color = 'none')
   
   
+}
+
+
+
+
+
+
+
+
+Coco_Fesse <- function(df_resume_periode, list_col, sens = 'Debit'){
+  hsize = 3
+  
+  
+  # df <- data.frame(a=1:100)
+  
+  
+ 
+  
+  
+  
+  p2 <-ggplot()+
+    # bande externe : superClasse
+    geom_bar(aes(x = 1.2 + hsize,
+                 y       = 1:100),
+             width   = 0.4,
+             stat    = "identity",
+             position = position_stack(reverse = TRUE)) +
+    
+    coord_radial("y", start=pi, end = 2*pi, clip = 'off') +
+    
+    # coord_polar("y", start=0, end = pi, clip = 'off') +
+    xlim(c(0, 1.5+hsize)) +
+    theme_void() +
+    theme(strip.text.y = element_text( angle = 270, vjust = 1),
+          strip.text.x = element_text( vjust = 1)) +
+    theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+  
+   p1 <-ggplot()+
+    # bande externe : superClasse
+    geom_bar(aes(x = 1.2 + hsize,
+                 y       = 1:100),
+             width   = 0.4,
+             stat    = "identity",
+             position = position_stack(reverse = TRUE)) +
+    
+    coord_radial("y", start=0, end = pi, clip = 'off') +
+    
+    # coord_polar("y", start=0, end = pi, clip = 'off') +
+    xlim(c(0, 1.5+hsize)) +
+    theme_void() +
+    theme(strip.text.y = element_text( angle = 270, vjust = 1),
+          strip.text.x = element_text( vjust = 1)) +
+    theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+  
+  
+  p1 <- ggplot(mtcars,aes(x=1:nrow(mtcars),y=mpg)) + geom_point()
+  
+  p2 <- ggplot(aes(x=1.2 + hsize,, y=1:100)) +
+    geom_rect(aes_string(ymax="ymax", ymin="ymin", xmax="2.5", xmin="2.0")) +
+    # geom_text(aes_string(label="label2",x="3",y="ypos",hjust="hjust")) +
+    coord_polar(theta='y') +
+    expand_limits(x = c(2, 4)) + #change x-axis range limits here
+    guides(fill=guide_legend(override.aes=list(colour=NA))) +
+    theme(axis.line = element_blank(),
+          axis.ticks=element_blank(),
+          axis.title=element_blank(),
+          axis.text.y=element_blank(),
+          axis.text.x=element_blank(),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_rect(fill = "white"),
+          plot.margin = unit(c(-2, 0, -2, -.1), "cm"),
+          legend.position = "none") +
+    scale_x_discrete(limits=c(0, 1))
+  
+  final <- arrangeGrob(p2,p1,layout_matrix = cbind(c(1),c(2)),
+                       widths=c(4),heights=c(2.5,4),respect=TRUE)
+  
   
   
 }
+
+
+
+
+
+
+
+# Ti_BonbonMiel <- function(df_resume_periode, list_col, sens = 'Debit'){
+#   hsize = 3
+#   
+#   # ordre dans lequel on veut voir apparaitre les colonnes du graphiques : periode sans l'année
+#   ordre_factor_periodes <- c(format(as.Date(str_c('01-', 1:12,'-2000')),'%B'), # tous les mois
+#                              'janv. févr. mars', 'avr. mai juin', 'juil. août sept.', 'oct. nov. déc.', # tous les trimestres
+#                              'janvier à juin', 'juiller à décembre' # semestres
+#   )
+#   
+#   
+#   df_bbm_periode_0 <- if(sens == 'Debit') filter(df_resume_periode, Montant < 0) else filter(df_resume_periode, Montant > 0)
+#   
+#   
+#   df_bbm_periode <- df_bbm_periode_0 %>%
+#     mutate(Montant = abs(Montant)) %>%
+#     group_by(periode) %>%
+#     arrange(Classe) %>% # les Classes sont des facteurs ordonnées selon le cout total de leurs Super_Classes respectives
+#     mutate(Classe_label = paste(Classe,'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
+#            Classe_periode = paste0(Classe,'/',periode)) %>%      # utilisé pour identifier les zones
+#     
+#     group_by(Super_Classe, periode) %>%
+#     mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
+#            Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%           # utilisé pour identifier les zones
+#     mutate(an = format(periode, '%Y'),
+#            periode_an = str_trim(str_extract(Label_periode, '^.{4}\\D+')), # on isole la premiere partie du Label, avant l'année
+#            periode_an = factor(periode_an, ordre_factor_periodes)) %>%
+#     as.data.frame()
+#   
+#   
+#   df_bbm_lab <- df_bbm_periode %>%
+#     # group_by(Super_Classe, Label_periode, periode) %>%
+#     # summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
+#     group_by(Label_periode) %>%
+#     mutate(total_trim = sum(Montant)) %>%
+#     mutate(ylab = cumsum(Montant)-0.5*Montant) %>%
+#     # décallage en fonction de la position dans le cercle
+#     ungroup() %>%
+#     mutate(max_total = max(total_trim),
+#            # direction du text par rapport au point d'ancrage -> vers l'extérieur du cercle :
+#            hjust_dir = 0.5-sinpi(2*ylab/max_total)/2, 
+#            vjust_dir = 0.5-cospi(2*ylab/max_total)/2) %>% # 0 : vers le haut ; 1 : vers le bas
+#     mutate(an = format(periode, '%Y'),
+#            periode_an = str_trim(str_extract(Label_periode, '^.{4}\\D+')), # on isole la premiere partie du Label, avant l'année
+#            periode_an = factor(periode_an, ordre_factor_periodes)) %>%
+#     # retrait des trop petites Classes pour eviter les chevauchements de label
+#     # filter(Montant > 0.02*max_total)
+#     mutate(Super_Classe = str_c(signif(Montant / (0.02*max_total), 3),
+#                                 signif(pmax(0.3, abs(2*vjust_dir-1)),3),
+#                                 signif((Montant / (0.02*max_total)) / pmax(0.3, abs(2*vjust_dir-1)) ,3), sep = ' ')) %>%
+#     # filter(((Montant / (0.02*max_total)) / pmax(0.2, abs(2*vjust_dir-1))) > 1)
+#     filter((Montant / (0.08*max_total*pmax(0.2, abs(2*vjust_dir-1)))) > 1)
+#   
+#   # ((Montant / a) / 2*pmax(0.2, abs(2*vjust_dir-1)))
+#   # (Montant / (a*2*pmax(0.2, abs(2*vjust_dir-1))))
+#   # 
+#   # (48648/5464)/65484
+#   # 48648/(5464*65484)
+#   # print('ICI_1')
+#   # 
+#   
+#   echelle <- quel_periode(df_resume_periode$Label_periode)
+#   
+#   N_col <- if( echelle != 'An' ) length(unique(df_bbm_periode$periode_an)) else length(unique(df_bbm_periode$an))
+#   N_lig <- if( echelle != 'An' ) length(unique(df_bbm_periode$an)) else 1
+#   
+#   # print('ICI_2')
+#   
+#   myplot <-
+#     ggplot(df_bbm_periode) +
+#     
+#     # bande externe : superClasse
+#     geom_bar_interactive(aes(x       = 1.2 + hsize,
+#                              y       = Montant,
+#                              fill    = Super_Classe,
+#                              tooltip = Super_Classe_label,
+#                              data_id = Super_Classe_periode),
+#                          width   = 0.4, 
+#                          stat    = "identity", 
+#                          position = position_stack(reverse = TRUE)) +
+#     
+#     # bande interne : Classe
+#     geom_bar_interactive(aes(x       = hsize, 
+#                              y       = Montant,
+#                              fill    = Classe,
+#                              tooltip = Classe_label, 
+#                              data_id = Classe_periode),
+#                          width    = 2, 
+#                          stat     = "identity", 
+#                          position = position_stack(reverse = TRUE)) +
+#     
+#     scale_fill_manual(values = list_col) +
+#     
+#     # total € au milieu
+#     geom_text(aes(label = str_extract(Label_periode, '\\d+ €$')),
+#               x = 0, y = 0) +#, size = 10, size.unit = 'pt')+ # size = ifelse(N_col>10, 7, 11)
+#     guides(fill = 'none') +
+#     
+#     
+#     coord_polar("y", start=0, clip = 'off') +
+#     xlim(c(0, 1.5+hsize)) +
+#     theme_void() + 
+#     theme(strip.text.y = element_text( angle = 270, vjust = 1),
+#           strip.text.x = element_text( vjust = 1))
+#   
+#   # # Ajout des labels sauf si l'echelle est le mois
+#   # if(N_col<10)
+#   #   myplot <- myplot +
+#   #   geom_text(data = df_bbm_lab, 
+#   #             aes(y     = ylab, 
+#   #                 label = Classe, 
+#   #                 hjust = hjust_dir, 
+#   #                 vjust = vjust_dir), 
+#   #             x    = 1.6 + hsize, 
+#   #             size = 7, size.unit = 'pt')
+#   
+#   # grille si annee ou autre
+#   if(is.na(first(df_bbm_periode$periode_an))){ # echelle == annee
+#     myplot <- myplot + facet_grid(.~paste(an, '\n')) 
+#   } else {
+#     myplot <- myplot + facet_grid(paste(an, '\n')~periode_an) 
+#   }
+#   
+#   
+#   # print('ICI_3')
+#   
+#   
+#   interactive_plot <- girafe(ggobj = myplot,
+#                              bg = "transparent",
+#                              height_svg = N_lig * 2,
+#                              width_svg  = N_col * 2,
+#                              # height_svg = 2*length(unique(df_bbm_periode$an)),
+#                              # width_svg  = max(10,N_col*2),
+#                              # pointsize  = 5,
+#                              options    = list(
+#                                opts_hover(css = "filter: brightness(95%)"),
+#                                opts_hover_inv(css = "opacity:0.4;"),
+#                                opts_selection(css = 'stroke:black',
+#                                               type = "single")
+#                              ))
+#   interactive_plot
+#   
+#   # htmltools::save_html(interactive_plot, "BonbonMiel_trimestriel.html")
+#   
+#   
+# }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

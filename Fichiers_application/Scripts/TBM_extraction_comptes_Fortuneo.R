@@ -22,15 +22,18 @@ extraction_Fortuneo <- function(dir, .force_compte = NULL){
   names(releve) <- str_replace_all(names(releve), 'é', 'e')
   
   releve$Date <- as.Date(releve$Date.operation, format = '%d/%m/%Y')
-  releve <- select(releve, -Date.operation, -Date.valeur, -Credit)
+  
   
   
   # releve$moyen <- str_extract(releve$libelle,'(^.+(?=\\d{2}/\\d{2}))|(^\\S+)')
-  
-  releve$Debit <- -releve$Debit
-  releve <- filter(releve, !is.na(Debit))
+  releve$Montant <- pmin(releve$Debit, releve$Credit, na.rm = TRUE) # si tout va bien, il y a ou débit ou crédit mais jamais les deux, donc pmin renvoie l'unique valeur dispo
+  # releve$Debit <- -releve$Debit
+  releve <- filter(releve, !is.na(Montant))
   
   releve$Compte <- if(!is.null(.force_compte)) .force_compte else paste('Fortuneo', str_extract(dir, '\\d+'))
+  
+  
+  releve <- select(releve, libelle, Date, Montant, Compte)
   
   releve
 }

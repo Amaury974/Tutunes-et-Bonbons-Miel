@@ -22,7 +22,7 @@ server <- function(input, output) {
   RV <- reactiveValues(data=NULL)
   RV$df_classif <- df_classif
   
-    # cat('emplacement du fichier de sauvegarde', 'D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Data/save.RDS', file = 'direction_sauvegarde.txt', sep = '\n')
+  # cat('emplacement du fichier de sauvegarde', 'D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Data/save.RDS', file = 'direction_sauvegarde.txt', sep = '\n')
   
   RDS_files <- try(readRDS(dir_sauvegarde), silent = TRUE)
   
@@ -47,7 +47,7 @@ server <- function(input, output) {
   observeEvent(input$dir_sauvegarde, {
     cat('>> Direction Sauvegarde\n\n')
     dir_sauvegarde <<- input$dir_sauvegarde
-   
+    
     
   })
   
@@ -66,7 +66,7 @@ server <- function(input, output) {
     
   })
   
-
+  
   #--------------------------------------------------------------------#
   #####                     __ Importation                         #####
   #--------------------------------------------------------------------#
@@ -165,7 +165,7 @@ server <- function(input, output) {
       RV$dir_identification_download <- file
       RV$df_classif %>%
         mutate(Date = format(Date, '%d/%m/%Y')) %>%
-      write.csv2(file, row.names = FALSE)
+        write.csv2(file, row.names = FALSE)
     }
   )
   
@@ -198,7 +198,7 @@ server <- function(input, output) {
     
     # ~~~~{    On ré-identifie tout    }~~~~
     df_identifie <- RV$df_identifie %>%
-      select(Date, libelle, Debit, Compte) %>%
+      select(Date, libelle, Montant, Compte) %>%
       fun_classif(df_classif)
     
     # df_resume_periode <- f_resume_trimestre(df_identifie)
@@ -250,32 +250,40 @@ server <- function(input, output) {
   # ~~~~{    Tab non assignés    }~~~~
   output$tab_nonIdentifies <- renderTable({
     # print(!is.null(RV$df_identifie))
-    cat('>> Identification > non identifiés\n\n')
+    cat('>> Identification > non identifiés _ 1\n')
     # print(RV$df_identifie)
     
     tab <- NULL
     
     if(!is.null(RV$df_identifie)){
       tab <- RV$df_identifie %>%
-        filter(is.na(Marqueur), !is.na(Debit)) %>%
-        arrange(desc(Debit)) %>%
+        filter(is.na(Marqueur), !is.na(Montant)) %>%
+        arrange(desc(abs(Montant))) %>%
         mutate(Date = format(Date, '%d/%m/%Y')) %>%
-        select(Date, libelle, Debit, Compte)
+        select(Date, libelle, Montant, Compte)
     }
+    cat('>>                              _ fin\n\n')
     
     tab
   })
   
   # ~~~~{    message    }~~~~
-  R_double_identification <- reactive(double_identification)
+  # R_double_identification <- reactive(double_identification)
+  # 
+  # output$erreur_id <- renderText({
+  #   cat('>> Identification > msg erreur\n\n')
+  #   print(R_double_identification())
+  #   R_double_identification()
+  # })
   
-  output$erreur_id <- renderText({
-    cat('>> Identification > msg erreur\n\n')
-    print(R_double_identification())
-    R_double_identification()
-  })
   
-  
+  # R_double_identification <- reactive(double_identification)
+  # 
+  # output$erreur_id <- renderText({
+  #   cat('>> Identification > msg erreur\n\n')
+  #   print(double_identification)
+  #   double_identification
+  # })
   
   
   
@@ -286,9 +294,31 @@ server <- function(input, output) {
   
   
   
-  df_resume_periode <- reactive(f_resume(RV$df_identifie, input$echelle))
+  df_resume_periode <- reactive({    
+    cat('>> Graphiques > Résumé _ 1\n')
+    
+    tab <- NULL
+    
+    if(!is.null(RV$df_identifie))
+      tab <-f_resume(RV$df_identifie, input$echelle)
+    
+    cat('                       _ fin\n\n')
+    
+    tab
+  })
   
-  list_col  <- reactive(f_couleurs(df_resume_periode()))
+  
+  list_col  <- reactive({   
+    cat('>> Graphiques > list_Col _ 1\n')
+    tab <- NULL
+    
+    if(!is.null(RV$df_identifie))
+      tab <-f_couleurs(df_resume_periode())
+    
+    cat('                         _ fin\n\n')
+    
+    tab
+  })
   
   
   
@@ -322,7 +352,7 @@ server <- function(input, output) {
     updateSliderTextInput(inputId = 'periode_subset', 
                           choices = CHOICES,
                           selected =  SELECTED
-                          )
+    )
     cat('                                   _ fin\n\n')
     
   })
@@ -335,7 +365,7 @@ server <- function(input, output) {
         '      ', input$echelle,'\n',
         '      ', as.character(input$periode_subset[1]),'à', as.character(input$periode_subset[2]), '\n')
     
-
+    
     df_resume <- filter(df_resume_periode(),
                         periode >= periodifier_Court_to_Date(input$periode_subset[1], echelle = input$echelle),
                         periode <= periodifier_Court_to_Date(input$periode_subset[2], echelle = input$echelle))
@@ -344,8 +374,8 @@ server <- function(input, output) {
     cat('                          _ 2\n')
     # df_resume <- df_resume_periode()
     if(input$typeGraph == 'Verification_donnees') plot <- Verification_donnees(df_resume, list_col(), RV$df_identifie) else {
-    if(!is.null(input$typeGraph))
-      plot <- eval(call(input$typeGraph, df_resume_periode=df_resume, list_col=list_col()))
+      if(!is.null(input$typeGraph))
+        plot <- eval(call(input$typeGraph, df_resume_periode=df_resume, list_col=list_col()))
     }
     
     cat('                          _ fin\n\n')
@@ -369,9 +399,9 @@ server <- function(input, output) {
     if(input$typeGraph == 'BonbonMiel_unique_giraph' & !is.null(giraph_select()))
       tab <- RV$df_identifie %>%
       filter(if(giraph_select() == 'NA') is.na(Classe) else Classe == giraph_select() | Super_Classe == giraph_select()) %>%
-      arrange(desc(Debit)) %>%
+      arrange(desc(Montant)) %>%
       mutate(Date = as.character(Date)) %>%
-      select(Date, libelle, Debit, Compte)
+      select(Date, libelle, Montant, Compte)
     
     if(input$typeGraph != 'BonbonMiel_unique_giraph' & !is.null(giraph_select())){
       
@@ -385,9 +415,9 @@ server <- function(input, output) {
       tab <- RV$df_identifie %>%
         filter(if(select_Classe == 'NA') is.na(Classe) else Classe == select_Classe | Super_Classe == select_Classe,
                Date >= encadrement_periode$deb, Date <= encadrement_periode$fin) %>%
-        arrange(desc(Debit)) %>%
+        arrange(desc(Montant)) %>%
         mutate(Date = as.character(Date)) %>%
-        select(Date, libelle, Debit, Compte)
+        select(Date, libelle, Montant, Compte)
     }
     
     cat('                         _ fin\n\n')

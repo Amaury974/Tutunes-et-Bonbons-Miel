@@ -1,8 +1,8 @@
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
 # Objectif : Formatage des données bancaires identifié
 
-#      IN : df_identifie[c('Date', 'libelle', 'Debit', 'Compte', 'Marqueur', 'Classe', 'Super_Classe']
-#      OUT: df_resume_periode[c('Super_Classe','Classe', 'periode', 'Debit', 'Label_Trimestre')]
+#      IN : df_identifie[c('Date', 'libelle', 'Montant', 'Compte', 'Marqueur', 'Classe', 'Super_Classe']
+#      OUT: df_resume_periode[c('Super_Classe','Classe', 'periode', 'Montant', 'Label_Trimestre')]
 #           list_col list(Classe=hex_color)
 
 # A.Jorant - Nov 2024
@@ -24,16 +24,16 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
   resume_periode <- df_identifie2 %>%
     mutate(periode = periodifier(Date, echelle, 'Date')) %>%
     group_by(Super_Classe, Classe, periode) %>%
-    summarise(Debit = sum(Debit, na.rm = TRUE)) %>%
+    summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
     ungroup()
   
   # ~~~~{    Toutes les Classes représentées tous les periodes    }~~~~
   resume_periode <- expand.grid(Classe = unique(resume_periode$Classe),
                                 periode = unique(resume_periode$periode)) %>%
     mutate(Super_Classe = str_extract(Classe, '^[^_]+'),
-           Debit = 0) %>%
+           Montant = 0) %>%
     bind_rows(resume_periode) %>%
-    arrange(desc(Debit)) %>%
+    arrange(desc(abs(Montant))) %>%
     distinct(Classe, periode, .keep_all = TRUE)
   
   
@@ -45,7 +45,7 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
   
   resume_periode <- resume_periode %>%
     group_by(periode) %>%
-    summarize(Total = round(sum(Debit))) %>%
+    summarize(Total = round(sum(Montant))) %>%
     arrange(periode) %>%
     mutate(Label_periode = paste(periodifier(periode, echelle, 'Long'), '\n', Total, '€'),
            Label_periode = factor(Label_periode, unique(Label_periode))) %>%
@@ -56,22 +56,22 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
   # ~~~~{    Classement des dépenses par Super_Classe (primaire)    }~~~~
   ordre_resume_sup <-resume_periode %>%
     group_by(Super_Classe) %>%
-    summarize(ordre_sup = -sum(Debit, na.rm = TRUE)/sd(Debit/mean(Debit))) # les dépenses très variables sont pénalisées
+    summarize(ordre_sup = -sum(abs(Montant), na.rm = TRUE)/sd(Montant/mean(Montant))) # les dépenses très variables sont pénalisées
   
   # ~~~~{    Classement des dépenses par Classe (secondaire)    }~~~~
   
   df_resume_periode <-
     resume_periode %>%
     group_by(Super_Classe, Classe) %>%
-    summarize(ordre_inf = -sum(Debit, na.rm = TRUE)/sd(Debit/mean(Debit))) %>%
+    summarize(ordre_inf = -sum(abs(Montant), na.rm = TRUE)/sd(Montant/mean(Montant))) %>%
     ungroup() %>%
     left_join(ordre_resume_sup, by = join_by(Super_Classe)) %>%
-    left_join(resume_periode, by = join_by(Super_Classe, Classe)) %>%  # + Debit, periodes
+    left_join(resume_periode, by = join_by(Super_Classe, Classe)) %>%  # + Montant, periodes
     arrange(ordre_sup, ordre_inf) %>%
     mutate(Super_Classe = factor(Super_Classe, unique(Super_Classe)),
            Classe = str_extract(Classe,'[^_]+$'), # on retire la super Classe de la Classe
            Classe = factor(Classe, unique(Classe))) %>%
-    select(Super_Classe, Classe, periode, Debit, Label_periode)
+    select(Super_Classe, Classe, periode, Montant, Label_periode)
   
   
   # # ~~~~{    Ménage    }~~~~
@@ -157,52 +157,33 @@ Periode_defaut <- function(df_resume_periode, df_identifie){
   
 echelle <- quelle_periode(label = df_resume_periode[1,"Label_periode"])
 
-
+# écart entre la première et la dernière transaction de la période et l'étendue théorique de cette période
 df_verif <- df_identifie %>%
-  # select(Date, Compte) %>%
   arrange(Date) %>%
   mutate(periode = periodifier(Date, echelle, 'Court'),
-         periode = factor(periode, unique(periode)),
-         Mois = format(Date, '%m')) %>%
+         periode = factor(periode, unique(periode))) %>%
   group_by(periode, Compte) %>%
-  summarize(N_ligne = length(Date),
-            Date_min = min(Date),
-            Date_max = max(Date),
-            nbr_mois = length(unique(Mois))) %>%
-  ungroup() %>%
-  # mutate(couleur_periode = nbr_mois == max(nbr_mois),
-  #        nbr_mois = if_else(couleur_periode, as.character(nbr_mois), str_c('bold(underline(',nbr_mois,'))'))) %>%
-  group_by(Compte) %>%
-  mutate(couleur_lignes = abs(N_ligne - mean(N_ligne))/mean(N_ligne),
-         couleur_lignes = case_when(couleur_lignes > 0.6 ~ 'FALSE', couleur_lignes > 0.3 ~ 'suspect', .default = 'TRUE')) %>%
-  
-  mutate(# nombre de mois
-    couleur_duree = nbr_mois == max(nbr_mois)) %>% # si une periode a moins de mois, elle est problablement tronquée 
-    # nbr_mois = if_else(couleur_duree, as.character(nbr_mois), str_c('bold(underline(',nbr_mois,'))'))) %>%
-  ungroup() %>%
+  summarize(Date_min = min(Date),
+            Date_max = max(Date)) %>%
   mutate( # date du debut
-    couleur_deb = Date_min - de_periodifier(periodifier( Date_min, echelle,'Date' ), echelle)$deb  ,
-    # couleur_deb = case_when(couleur_deb > 10 ~ 'FALSE', couleur_deb > 5 ~ 'suspect', .default = 'TRUE'),
-    # label_deb = str_c('phantom(',nbr_mois, '~mois~du)~',format_plotmath(Date_min)),
-    
-    # date de fin
-    couleur_fin = de_periodifier(periodifier( Date_max, echelle,'Date' ), echelle)$fin - Date_max)
-    # couleur_fin = case_when(couleur_fin > 10 ~ 'FALSE', couleur_fin > 5 ~ 'suspect', .default = 'TRUE'),
-    # label_fin = str_c('phantom(', nbr_mois, '~mois~du~',format_plotmath(Date_min),'~au)~', format_plotmath(Date_max)),
-    
-    # label_periode =  str_c(nbr_mois, 'mois~du', format_plotmath(Date_min), 'au', format_plotmath(Date_max), sep = '~'))
+    ecart_deb = Date_min - de_periodifier(periodifier( Date_min, echelle,'Date' ), echelle)$deb  ,
+    ecart_fin = de_periodifier(periodifier( Date_max, echelle,'Date' ), echelle)$fin - Date_max)
 
-
-
+# les périodes pour lesquels l'écart ne dépasse pas 10 jours, donc pas plus de 10 jours sans transactions en bord de période.
+# pour tous les comptes présents.
 Periode_out <- df_verif %>%
+  group_by(periode, Compte) %>%
+  summarise(ok_deb_fin = !any(ecart_deb > 10 | ecart_fin > 10)) %>%
   group_by(periode) %>%
-  summarise(ok_deb_fin = !any(couleur_deb > 10 | couleur_fin > 10)) %>%
-  filter(ok_deb_fin) %>%
+  summarize(nbr_comptes_ok = sum(as.numeric(ok_deb_fin))) %>%
+  filter(nbr_comptes_ok == max(nbr_comptes_ok)) %>%
   pull(periode)
 
+# si aucune période n'est jugée bonne, on garde tout
 if(length(Periode_out) == 0) Periode_out <- unique(df_verif$periode)
 
-
+# unquement la première et ladernière période présente.
+# /!\ pas de détection prévue si il y a un troue dans les données
 as.character(c(first(Periode_out), last(Periode_out)))
 
 }
