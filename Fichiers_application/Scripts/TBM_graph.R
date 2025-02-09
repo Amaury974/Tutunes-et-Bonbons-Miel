@@ -103,7 +103,7 @@ Verification_donnees <- function(df_resume_periode, list_col, df_identifie){
     annotate(geom = 'rect', 
              ymin = selectionnees[1]-0.5, ymax = selectionnees[2]+0.5,
              xmin = 0.9, xmax = 10, 
-             alpha = 0, color = 'grey50', size = 1)+
+             alpha = 0, color = 'grey50', linewidth = 1)+
     
     scale_color_manual(values = c('TRUE' = 'black', 'FALSE' = 'red', 'suspect' = 'gold2')) +
     guides(color = 'none', fill = 'none') +
@@ -509,6 +509,59 @@ histogramme_Classe_giraph <- histogramme_Classe
 
 
 
+# ~~~~{    Comparaison Crédits Débits    }~~~~
+
+histogramme_Fasse_a_Fasse <- function(df_resume_periode, list_col){
+  
+  # ordre dans lequel on veut voir apparaitre les colonnes du graphiques : periode sans l'année
+  # ordre_factor_periodes <- c(format(as.Date(str_c('01-', 1:12,'-2000')),'%B'), # tous les mois
+  #                            'janv. févr. mars', 'avr. mai juin', 'juil. août sept.', 'oct. nov. déc.', # tous les trimestres
+  #                            'janvier à juin', 'juiller à décembre' # semestres
+  # )
+  
+  echelle <- quelle_periode(label = df_resume_periode[1,"Label_periode"])
+  
+  
+  df_fasse_a_fasse <- df_resume_periode %>%
+    mutate(sens = if_else(Montant > 0, 'Credit', 'Debit'),
+           periode_date = periode,
+           periode = periodifier(periode, echelle = echelle)) %>%
+    
+    group_by(periode_date, periode, sens) %>%
+    summarise(Montant = sum(Montant, na.rm = TRUE))
+  
+  
+  
+  myplot <- ggplot(df_fasse_a_fasse, aes(x = Montant, y = periode, fill = sens)) +
+    geom_col(aes(x=-Montant), fill= 'grey', orientation = 'y') + 
+    geom_col_interactive(aes(tooltip = abs(Montant)), orientation = 'y') + 
+    scale_fill_brewer(palette = 'Dark2') +
+    geom_text(data=filter(df_fasse_a_fasse, sens== 'Debit'), aes(label = periodifier(periode_date, echelle, 'Long')), x = 0) +
+    scale_y_discrete(limits = rev) +
+    scale_x_continuous(position = 'top') +
+    theme(axis.text.y=element_blank(),  #remove y axis labels
+          axis.ticks.y=element_blank(),  #remove y axis ticks
+          axis.title.y = element_blank()
+    ) +
+    guides(fill = 'none')
+  
+
+  interactive_plot <- girafe(ggobj = myplot,
+                             bg = "transparent",
+                             height_svg = length(unique(df_fasse_a_fasse$periode))*0.6,
+                             width_svg = 10,
+                             options = list(
+                               opts_hover(css = "filter: brightness(95%)"),
+                               opts_hover_inv(css = "opacity:0.4;")
+                             ))
+  
+  interactive_plot
+  
+  }
+
+
+
+
 
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####                   Les graphs pas ouf                    #####
@@ -659,7 +712,7 @@ Coco_Fesse <- function(df_resume_periode, list_col, sens = 'Debit'){
   # df <- data.frame(a=1:100)
   
   
- 
+  
   
   
   
@@ -680,7 +733,7 @@ Coco_Fesse <- function(df_resume_periode, list_col, sens = 'Debit'){
           strip.text.x = element_text( vjust = 1)) +
     theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
   
-   p1 <-ggplot()+
+  p1 <-ggplot()+
     # bande externe : superClasse
     geom_bar(aes(x = 1.2 + hsize,
                  y       = 1:100),

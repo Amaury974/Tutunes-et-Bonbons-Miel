@@ -266,6 +266,7 @@ ui <- navbarPage(
                  'un bonbon miel par periode'='Ti_BonbonMiel',
                  'histogramme par periode'='histogramme_periode',
                  'histogramme comparaison par Classe'='histogramme_Classe',
+                 'comparaison des dépenses et recettes'='histogramme_Fasse_a_Fasse',
                  'courbes empilés (in proogress)'='Courbe_empile_giraph')
              )
       ), 
