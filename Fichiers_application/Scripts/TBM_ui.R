@@ -137,23 +137,57 @@ ui <- navbarPage(
              h3('Classification'),
              # ~~~~{    nouvel element de classification    }~~~~
              
-             p(HTML('<p>Nouvel element de classification : <i> <small> laisser super Classe vide pour masquer </small> </i> </p>')), 
+             
+             
+             p(HTML("<p>La classification est faite en recherchant des Marqueurs dans les libellés des lignes de compte.</p>
+<p>Pour ajouter un nouvel élément de classification, veuillez renseigner les éléments suivants :</p>
+
+<p> <b>Choix de la Classe</b> </p>
+<p>lorsque cela est possible, sélectionnez une Classe parmis celles déjà enregistrées,</p>
+<p>les différentes classes <i>Transfert</i> sont éliminées de la classification.</p>
+<p>si vous souhaitez en ajouter une nouvelle, vous pouvez le faire directement dans le panneau de sélection.</p>
+<p>Veuillez toutefois à le renseigner comme suit :</p>
+<p>un premier élément sert de classe thématique, puis le second sert de classification précise.</p>
+<p>Il ne doit pas y avoir d'accent et un seul espace, entre les deux éléments.</p>
+
+<p> <b>Marqueur</b> </p>
+<p>Le marqueur peut être simplement une parite ou l'entièreté d'un libellé de ligne de compte.</p>
+<p>Si vous souhaitez indiquer qu'un marqueur est prioritaire par rapport aux autres, ajoutez 1/ avant le marqueur. ex:1/AUCHAN CAR</p>
+<p>Si vous  souhaitez répartir une dépense sur 10 mois, ajoutez AMORTI10/ avant le marqueur. procédez de même avec le nombre de mois désirés.</p>
+
+<p> <b>Date (facultatif)</b> </p>
+<p>Enfin vous pouvez ajouter une date et ainsi spécifier une date pour laquelle le marqueur sera recherché.</p> <br>")),
+             
+             # p(HTML('<p>Nouvel element de classification : <i> <small> laisser super Classe vide pour masquer </small> </i> </p>')), 
              fluidRow(
                column(8,
                       fluidRow(
-                        column(3,
-                               textInput(
-                                 inputId = 'nv_supClasse',
-                                 label = 'super Classe'
+                        column(6,
+                               selectizeInput(
+                                 inputId = 'select_Classe',
+                                 label = 'Selection de la Classe',
+                                 choices = 'aucune classe préchargée',
+                                 options = list(placeholder = 'Veuillez choisir une Classe', 
+                                                onInitialize = I('function() { this.setValue(""); }'),
+                                                create = TRUE)
                                )
-                        ), 
+                        ),
                         
-                        column(3,
-                               textInput(
-                                 inputId = 'nv_Classe',
-                                 label = 'Classe'
-                               )
-                        ), 
+                        
+                        
+                        # column(3,
+                        #        textInput(
+                        #          inputId = 'nv_supClasse',
+                        #          label = 'super Classe'
+                        #        )
+                        # ), 
+                        # 
+                        # column(3,
+                        #        textInput(
+                        #          inputId = 'nv_Classe',
+                        #          label = 'Classe'
+                        #        )
+                        # ), 
                         
                         column(6,
                                textInput(
@@ -281,7 +315,7 @@ ui <- navbarPage(
     tableOutput(outputId = 'clicked_tab'),
   ),
   
-
+  
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   #####                  UI : Page 3 - Data Display                #####
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #

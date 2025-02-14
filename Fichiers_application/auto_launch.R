@@ -27,7 +27,8 @@ needed_packages <- c(#'Rtools', # utilisé par certains packages
   'ggiraph', # interactivité des graphiques
   'shiny', # application
   'DT', # tableaux interactifs, modifiables
-  'shinyWidgets'
+  'shinyWidgets',
+  'shinyjs' # update date input avec possiblilité de laisser vide
   # 'shinyFiles' # chargement des fichiers non securisé mais laissant une trace de l'emplacement
 )
 

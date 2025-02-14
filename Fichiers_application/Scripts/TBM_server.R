@@ -171,7 +171,7 @@ server <- function(input, output) {
   
   
   
-  # ~~~~{    MaJ    }~~~~
+  # ~~~~{    bouton MaJ    }~~~~
   observeEvent(input$MaJ_Classe, {
     cat('>> Identification > MaJ Classe _ 1\n')
     
@@ -180,47 +180,76 @@ server <- function(input, output) {
       
       # !length(as.Date(character(0)))
       
-      
       # print(input$nv_Date)
       
-      Nv_ligne <-data.frame(Super_Classe = input$nv_supClasse,
-                            Classe = input$nv_Classe,
+      Nv_ligne <-data.frame(Super_Classe = str_extract(input$select_Classe, '^[^\\s]+'),
+                            Classe = str_extract(input$select_Classe, '[\\s]+$'),
                             Marqueur = toupper(input$nv_Marq),
                             Date = if(length(input$nv_Date)) input$nv_Date else NA)
       cat("                ajout d'une ligne :")
       print(Nv_ligne)
       
-      df_classif <<- bind_rows(RV$df_classif, Nv_ligne)
+      RV$df_classif <- bind_rows(RV$df_classif, Nv_ligne)
+      
     }
     
     
-    cat('                              _ 3\n')   
-    
-    # ~~~~{    On ré-identifie tout    }~~~~
-    df_identifie <- RV$df_identifie %>%
-      select(Date, libelle, Montant, Compte) %>%
-      fun_classif(df_classif)
-    
-    # df_resume_periode <- f_resume_trimestre(df_identifie)
-    # 
-    # list_col <- f_couleurs(df_resume_periode)
-    
-    RV$df_classif <- df_classif %>%
-      arrange(Super_Classe, Classe)
-    
-    RV$df_identifie <- df_identifie
-    # RV$df_resume_periode <- df_resume_periode
-    # RV$list_col <- list_col
     
     # ~~~~{    Reset des champs    }~~~~
     cat('                              _ 4\n')
     updateTextInput(inputId = 'nv_Marq', value = '')
-    updateDateInput(inputId = 'nv_Date', value = as.Date(character(0)))
+    updateDateInput(inputId = 'nv_Date', value = NA)
     
     
     cat('                              _ fin\n\n')   
     
   })
+  
+  # ~~~~{    update des identification    }~~~~
+  observeEvent(RV$df_classif, {
+    
+    cat('>> Identification > Update des identifications _ 1\n')
+    
+    # ~~~~{    On ré-identifie tout    }~~~~
+    df_identifie <- RV$df_identifie %>%
+      select(Date, libelle, Montant, Compte) %>%
+      fun_classif(RV$df_classif)
+    
+    
+    RV$df_classif <- df_classif %>%
+      arrange(Super_Classe, Classe)
+    
+    RV$df_identifie <- df_identifie
+    
+    
+    cat('                                               _ fin\n\n')   
+    
+    
+  })
+  
+  
+  # ~~~~{    Champs de selection des Classes dispo    }~~~~
+  observeEvent(RV$df_classif, {
+    cat('>> Identification > Champs Selection _ 1\n')
+    
+    CHOICES <- RV$df_classif %>%
+      group_by(Super_Classe) %>%
+      mutate(N = length(Classe)) %>%
+      group_by(Classe) %>%
+      mutate(n = length(Classe),
+             choices = paste(Super_Classe, Classe)) %>%
+      arrange(-N, -n) %>%
+      pull(choices) %>%
+      unique()
+    
+    updateSelectizeInput(inputId = 'select_Classe', choices = CHOICES)
+    
+    cat('                                   _ fin\n\n')   
+    
+  }
+  
+  )
+  
   
   
   # ~~~~{    Tab Classification    }~~~~
@@ -228,6 +257,7 @@ server <- function(input, output) {
   
   output$tab_classif <- renderDT(
     {
+      
       cat('>> Identification > Render Classif\n\n')
       
       mutate(RV$df_classif,
