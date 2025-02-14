@@ -227,7 +227,7 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col, sens = 'Debit'){
   )
   
   
-  df_bbm_periode_0 <- if(sens == 'Debit') filter(df_resume_periode, Montant < 0) else filter(df_resume_periode, Montant > 0)
+  df_bbm_periode_0 <- if(toupper(sens) == 'DEBIT') filter(df_resume_periode, Montant < 0) else filter(df_resume_periode, Montant > 0)
   
   
   df_bbm_periode <- df_bbm_periode_0 %>%
@@ -241,11 +241,11 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col, sens = 'Debit'){
     mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
            Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%           # utilisé pour identifier les zones
     mutate(an = format(periode, '%Y'),
-           periode_an = str_trim(str_extract(Label_periode, '^.{4}\\D+')), # on isole la premiere partie du Label, avant l'année
+           periode_an = str_trim(str_extract(Label_periode, '^.{3,4}\\D+')), # on isole la premiere partie du Label, avant l'année
            periode_an = factor(periode_an, ordre_factor_periodes)) %>%
     as.data.frame()
   
-  
+
   df_bbm_lab <- df_bbm_periode %>%
     # group_by(Super_Classe, Label_periode, periode) %>%
     # summarise(Montant = sum(Montant, na.rm = TRUE)) %>%

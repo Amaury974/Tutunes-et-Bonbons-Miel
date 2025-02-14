@@ -14,11 +14,12 @@
 
 
 f_resume <- function(df_identifie, echelle = 'Semestre'){
- 
+  
   # ~~~~{    Summarize    }~~~~
   
   # print(df_identifie)
-  df_identifie2 <- filter(df_identifie, (Super_Classe != '' | is.na(Super_Classe))) %>%
+  # les transferts d'argent sont ignoré pour l'instant
+  df_identifie2 <- filter(df_identifie, (Super_Classe != 'Transferts' | is.na(Super_Classe))) %>%
     mutate(Classe = str_c(Super_Classe, '_', Classe))
   
   resume_periode <- df_identifie2 %>%
@@ -34,7 +35,8 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
            Montant = 0) %>%
     bind_rows(resume_periode) %>%
     arrange(desc(abs(Montant))) %>%
-    distinct(Classe, periode, .keep_all = TRUE)
+    distinct(Classe, periode, .keep_all = TRUE) %>%
+    mutate(Direction = if_else(Montant > 0, 'Credit', 'Debit'))
   
   
   
@@ -44,17 +46,17 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
   # '2023-11-15' => 'Oct. Nov. Dec. 2023 \n 7500 €'
   
   resume_periode <- resume_periode %>%
-    group_by(periode) %>%
+    group_by(periode, Direction) %>%
     summarize(Total = round(sum(Montant))) %>%
     arrange(periode) %>%
     mutate(Label_periode = paste(periodifier(periode, echelle, 'Long'), '\n', Total, '€'),
            Label_periode = factor(Label_periode, unique(Label_periode))) %>%
     select(-Total) %>%
-    right_join(resume_periode, by = 'periode')
+    right_join(resume_periode, by = c('periode', 'Direction'))
   
   
   # ~~~~{    Classement des dépenses par Super_Classe (primaire)    }~~~~
-  ordre_resume_sup <-resume_periode %>%
+  ordre_resume_sup <- resume_periode %>%
     group_by(Super_Classe) %>%
     summarize(ordre_sup = -sum(abs(Montant), na.rm = TRUE)/sd(Montant/mean(Montant))) # les dépenses très variables sont pénalisées
   
@@ -78,6 +80,8 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
   # rm(list = c('ordre_resume_sup', 'resume_periode'))
   
 }
+
+
 
 
 #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
@@ -155,37 +159,37 @@ f_couleurs <- function(df_resume_periode){
 
 Periode_defaut <- function(df_resume_periode, df_identifie){
   
-echelle <- quelle_periode(label = df_resume_periode[1,"Label_periode"])
-
-# écart entre la première et la dernière transaction de la période et l'étendue théorique de cette période
-df_verif <- df_identifie %>%
-  arrange(Date) %>%
-  mutate(periode = periodifier(Date, echelle, 'Court'),
-         periode = factor(periode, unique(periode))) %>%
-  group_by(periode, Compte) %>%
-  summarize(Date_min = min(Date),
-            Date_max = max(Date)) %>%
-  mutate( # date du debut
-    ecart_deb = Date_min - de_periodifier(periodifier( Date_min, echelle,'Date' ), echelle)$deb  ,
-    ecart_fin = de_periodifier(periodifier( Date_max, echelle,'Date' ), echelle)$fin - Date_max)
-
-# les périodes pour lesquels l'écart ne dépasse pas 10 jours, donc pas plus de 10 jours sans transactions en bord de période.
-# pour tous les comptes présents.
-Periode_out <- df_verif %>%
-  group_by(periode, Compte) %>%
-  summarise(ok_deb_fin = !any(ecart_deb > 10 | ecart_fin > 10)) %>%
-  group_by(periode) %>%
-  summarize(nbr_comptes_ok = sum(as.numeric(ok_deb_fin))) %>%
-  filter(nbr_comptes_ok == max(nbr_comptes_ok)) %>%
-  pull(periode)
-
-# si aucune période n'est jugée bonne, on garde tout
-if(length(Periode_out) == 0) Periode_out <- unique(df_verif$periode)
-
-# unquement la première et ladernière période présente.
-# /!\ pas de détection prévue si il y a un troue dans les données
-as.character(c(first(Periode_out), last(Periode_out)))
-
+  echelle <- quelle_periode(label = df_resume_periode[1,"Label_periode"])
+  
+  # écart entre la première et la dernière transaction de la période et l'étendue théorique de cette période
+  df_verif <- df_identifie %>%
+    arrange(Date) %>%
+    mutate(periode = periodifier(Date, echelle, 'Court'),
+           periode = factor(periode, unique(periode))) %>%
+    group_by(periode, Compte) %>%
+    summarize(Date_min = min(Date),
+              Date_max = max(Date)) %>%
+    mutate( # date du debut
+      ecart_deb = Date_min - de_periodifier(periodifier( Date_min, echelle,'Date' ), echelle)$deb  ,
+      ecart_fin = de_periodifier(periodifier( Date_max, echelle,'Date' ), echelle)$fin - Date_max)
+  
+  # les périodes pour lesquels l'écart ne dépasse pas 10 jours, donc pas plus de 10 jours sans transactions en bord de période.
+  # pour tous les comptes présents.
+  Periode_out <- df_verif %>%
+    group_by(periode, Compte) %>%
+    summarise(ok_deb_fin = !any(ecart_deb > 10 | ecart_fin > 10)) %>%
+    group_by(periode) %>%
+    summarize(nbr_comptes_ok = sum(as.numeric(ok_deb_fin))) %>%
+    filter(nbr_comptes_ok == max(nbr_comptes_ok)) %>%
+    pull(periode)
+  
+  # si aucune période n'est jugée bonne, on garde tout
+  if(length(Periode_out) == 0) Periode_out <- unique(df_verif$periode)
+  
+  # unquement la première et ladernière période présente.
+  # /!\ pas de détection prévue si il y a un troue dans les données
+  as.character(c(first(Periode_out), last(Periode_out)))
+  
 }
 
 

@@ -228,11 +228,13 @@ server <- function(input, output) {
   
   output$tab_classif <- renderDT(
     {
-      cat('>> Identification > render classif\n\n')
+      cat('>> Identification > Render Classif\n\n')
+      
       mutate(RV$df_classif,
              Date = format(Date, '%d/%m/%Y'),
              Classe = as.factor(Classe),
-             Super_Classe = as.factor(Super_Classe))},
+             Super_Classe = as.factor(Super_Classe))
+    },
     selection = 'none',
     # editable = 'row',
     filter = 'top',
@@ -415,7 +417,7 @@ server <- function(input, output) {
       tab <- RV$df_identifie %>%
         filter(if(select_Classe == 'NA') is.na(Classe) else Classe == select_Classe | Super_Classe == select_Classe,
                Date >= encadrement_periode$deb, Date <= encadrement_periode$fin) %>%
-        arrange(desc(Montant)) %>%
+        arrange(desc(abs(Montant))) %>%
         mutate(Date = as.character(Date)) %>%
         select(Date, libelle, Montant, Compte)
     }
