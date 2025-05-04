@@ -2,6 +2,10 @@
 # Objectif : Extraction et pré-formatage des extraction de 
 #            compte Fortuneo
 # 
+# 
+#       IN : dir
+#       OUT: releve[c('Date', 'libelle', 'Montant', 'Compte')]
+# 
 # A.Jorant - Nov 2024
 
 # R version 4.4.1

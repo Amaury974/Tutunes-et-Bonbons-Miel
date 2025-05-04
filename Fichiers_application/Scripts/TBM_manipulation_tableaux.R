@@ -2,7 +2,7 @@
 # Objectif : Formatage des données bancaires identifié
 
 #      IN : df_identifie[c('Date', 'libelle', 'Montant', 'Compte', 'Marqueur', 'Classe', 'Super_Classe']
-#      OUT: df_resume_periode[c('Super_Classe','Classe', 'periode', 'Montant', 'Label_Trimestre')]
+#      OUT: df_resume_periode[c('Super_Classe','Classe', 'periode', 'Montant', 'Label_periode')]
 #           list_col list(Classe=hex_color)
 
 # A.Jorant - Nov 2024
@@ -19,8 +19,9 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
   
   # print(df_identifie)
   # les transferts d'argent sont ignoré pour l'instant
-  df_identifie2 <- filter(df_identifie, (Super_Classe != 'Transferts' | is.na(Super_Classe))) %>%
-    mutate(Classe = str_c(Super_Classe, '_', Classe))
+  df_identifie2 <- filter(df_identifie, (Super_Classe != 'Transferts' | is.na(Super_Classe)))
+  # %>%
+  #   mutate(Classe = str_c(Super_Classe, '_', Classe))
   
   resume_periode <- df_identifie2 %>%
     mutate(periode = periodifier(Date, echelle, 'Date')) %>%
@@ -69,13 +70,12 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
     ungroup() %>%
     left_join(ordre_resume_sup, by = join_by(Super_Classe)) %>%
     left_join(resume_periode, by = join_by(Super_Classe, Classe)) %>%  # + Montant, periodes
-    arrange(ordre_sup, ordre_inf) %>%
+    arrange(ordre_sup, ordre_inf) %>% #distinct(Super_Classe, Classe, ordre_inf, ordre_sup)
     mutate(Super_Classe = factor(Super_Classe, unique(Super_Classe)),
-           Classe = str_extract(Classe,'[^_]+$'), # on retire la super Classe de la Classe
+           # Classe = str_extract(Classe,'[^_]+$'), # on retire la super Classe de la Classe
            Classe = factor(Classe, unique(Classe))) %>%
     select(Super_Classe, Classe, periode, Montant, Label_periode)
-  
-  
+
   # # ~~~~{    Ménage    }~~~~
   # rm(list = c('ordre_resume_sup', 'resume_periode'))
   
@@ -87,16 +87,31 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
 #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
 #####                          Couleurs                          #####
 #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
-
-
 f_couleurs <- function(df_resume_periode){
-  # ~~~~{    Assignation de couleurs aux super-Classes    }~~~~
-  df_sup_col <- 
-    data.frame(Super_Classe = unique(df_resume_periode$Super_Classe),
-               Super_col = qualitative_hcl(length(unique(df_resume_periode$Super_Classe)), 
-                                           palette = "Dark 3"))
+  list_col1 <- 
+    filter(df_resume_periode, Montant <0)%>%
+    f_couleurs_part(Palette='Dark2')
+
+    list_col2 <- 
+    filter(df_resume_periode, Montant >0) %>%
+    f_couleurs_part(Palette='Set1')
   
-  df_couleur <- df_resume_periode %>%
+  c(list_col1, list_col2)
+}
+
+# RColorBrewer::brewer.pal()
+
+# df_resume_periode<-filter(df_resume_periode, Montant <0)
+
+f_couleurs_part <- function(df_resume_periode, Palette){
+  # ~~~~{    Assignation de couleurs aux super-Classes    }~~~~
+  df_sup_col <- data.frame(Super_Classe = unique(df_resume_periode$Super_Classe))
+  
+  df_sup_col$Super_col <- RColorBrewer::brewer.pal(max(3,nrow(df_sup_col)), Palette)[1:nrow(df_sup_col)] # minimal value for n is 3, returning requested palette with 3 different levels
+                 # qualitative_hcl(length(unique(df_resume_periode$Super_Classe)), 
+                 #                           palette = Palette))
+
+    df_couleur <- df_resume_periode %>%
     distinct(Super_Classe, Classe) %>%
     # distinct() %>%
     left_join(df_sup_col, by = join_by(Super_Classe)) 
@@ -129,18 +144,19 @@ f_couleurs <- function(df_resume_periode){
   
   for(i in 1:nrow(df_couleur))
     list_col[[as.character(df_couleur[i,'Classe'])]] <- df_couleur[i,'col']
+    # list_col[[paste(df_couleur[i,'Super_Classe'], df_couleur[i,'Classe'])]] <- df_couleur[i,'col']
   
+  # unique(df_couleur$Classe)
   
-  
-  # # ~~~~{    test    }~~~~
-  # df_resume_periode %>%
-  #   distinct(Super_Classe, Classe) %>%
-  #   ggplot() +
-  #   geom_bar(aes(x=Classe, fill = Classe), y=1) +
-  #   geom_bar(aes(x=Classe, fill = Super_Classe, y=0.3),stat = 'identity', color = 'black')+
-  #   scale_fill_manual(values = list_col) +
-  #   guides(fill='none') +
-  #   theme(axis.text.x = element_text(angle = (330), hjust=0))
+  # ~~~~{    test    }~~~~
+  df_resume_periode %>%
+    distinct(Super_Classe, Classe) %>%
+    ggplot() +
+    geom_bar(aes(x=Classe, fill = Classe), y=1) +
+    geom_bar(aes(x=Classe, fill = Super_Classe, y=0.3),stat = 'identity', color = 'black')+
+    scale_fill_manual(values = list_col) +
+    guides(fill='none') +
+    theme(axis.text.x = element_text(angle = (330), hjust=0))
   
   # # ~~~~{    Ménage    }~~~~
   # rm(list = c('df_couleur', 'col_dev', 'df_sup_col'))
@@ -148,9 +164,17 @@ f_couleurs <- function(df_resume_periode){
   list_col
   
 }
-
-
-
+# for(i in 1:16){
+#   pal = palette.pals()[i]
+#   print(pal)
+# (data.frame(A=1:6, B=LETTERS[1:6])%>%
+# ggplot(aes(x=A, color= B))+
+#   geom_point(y=1,size = 5)+
+#   scale_color_manual(values = palette(pal))+
+#     labs(title=pal)) %>%
+#     
+#     print()
+# }
 
 #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
 #####                           Période                          #####

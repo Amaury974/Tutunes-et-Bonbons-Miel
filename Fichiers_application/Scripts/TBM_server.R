@@ -48,7 +48,6 @@ server <- function(input, output) {
     cat('>> Direction Sauvegarde\n\n')
     dir_sauvegarde <<- input$dir_sauvegarde
     
-    
   })
   
   observeEvent(input$save, {
@@ -56,6 +55,7 @@ server <- function(input, output) {
     print(dir_sauvegarde)
     test_sauvegarde <- try(saveRDS(list(df_classif=RV$df_classif, df_identifie=RV$df_identifie), file = dir_sauvegarde))
     print(test_sauvegarde)
+    
     if(!inherits(test_sauvegarde, "try-error")) {
       cat('            _ Succès\n')
       print(getwd())
@@ -119,7 +119,7 @@ server <- function(input, output) {
       cat('                            _ fin\n\n')
     }
   )
-  
+
   # # ~~~~{    Depuis résumé    }~~~~
   # observeEvent(
   #   input$input_resume,{
@@ -182,21 +182,22 @@ server <- function(input, output) {
       
       # print(input$nv_Date)
       
-      Nv_ligne <-data.frame(Super_Classe = str_extract(input$select_Classe, '^[^\\s]+'),
-                            Classe = str_extract(input$select_Classe, '[\\s]+$'),
-                            Marqueur = toupper(input$nv_Marq),
-                            Date = if(length(input$nv_Date)) input$nv_Date else NA)
-      cat("                ajout d'une ligne :")
+      Nv_ligne <- data.frame(Super_Classe = str_extract(input$select_Classe, '^[^\\s]+'),
+                             Classe = str_extract(input$select_Classe, '[^\\s]+$'),
+                             Marqueur = toupper(input$nv_Marq),
+                             Date = if(length(input$nv_Date)) input$nv_Date else NA)
+      
+      cat("                ajout d'une ligne :\n")
       print(Nv_ligne)
       
       RV$df_classif <- bind_rows(RV$df_classif, Nv_ligne)
       
+      
     }
     
     
-    
-    # ~~~~{    Reset des champs    }~~~~
-    cat('                              _ 4\n')
+    # Reset des champs
+    cat('                              _ 3\n')
     updateTextInput(inputId = 'nv_Marq', value = '')
     updateDateInput(inputId = 'nv_Date', value = NA)
     
@@ -205,18 +206,17 @@ server <- function(input, output) {
     
   })
   
-  # ~~~~{    update des identification    }~~~~
+  # ~~~~{    Update des identification    }~~~~
   observeEvent(RV$df_classif, {
     
     cat('>> Identification > Update des identifications _ 1\n')
     
     # ~~~~{    On ré-identifie tout    }~~~~
-    df_identifie <- RV$df_identifie %>%
-      select(Date, libelle, Montant, Compte) %>%
-      fun_classif(RV$df_classif)
+    df_identifie <- fun_classif(RV$df_identifie, RV$df_classif)
     
+    cat('                                               _ 2\n')   
     
-    RV$df_classif <- df_classif %>%
+    RV$df_classif <- RV$df_classif %>%
       arrange(Super_Classe, Classe)
     
     RV$df_identifie <- df_identifie
@@ -238,7 +238,7 @@ server <- function(input, output) {
       group_by(Classe) %>%
       mutate(n = length(Classe),
              choices = paste(Super_Classe, Classe)) %>%
-      arrange(-N, -n) %>%
+      arrange(-N, Super_Classe, -n, Classe) %>%
       pull(choices) %>%
       unique()
     
@@ -289,7 +289,7 @@ server <- function(input, output) {
     
     if(!is.null(RV$df_identifie)){
       tab <- RV$df_identifie %>%
-        filter(is.na(Marqueur), !is.na(Montant)) %>%
+        filter(is.na(Classe), !is.na(Montant)) %>%
         arrange(desc(abs(Montant))) %>%
         mutate(Date = format(Date, '%d/%m/%Y')) %>%
         select(Date, libelle, Montant, Compte)
@@ -327,7 +327,7 @@ server <- function(input, output) {
   
   
   df_resume_periode <- reactive({    
-    cat('>> Graphiques > Résumé _ 1\n')
+    cat('>> Graphiques > df_resume_periode _ 1\n')
     
     tab <- NULL
     
@@ -421,21 +421,44 @@ server <- function(input, output) {
     input$graph_selected
   })
   
-  output$clicked_tab <- renderTable({    
+  output$clicked_tab <- renderTable({
     
     cat('>> Graphiques > clicked tab _ 1\n')
     print(giraph_select())
     tab <- NULL
     
     
-    if(input$typeGraph == 'BonbonMiel_unique_giraph' & !is.null(giraph_select()))
+    if(input$typeGraph == 'BonbonMiel_unique_giraph' & !is.null(giraph_select())){
+      
       tab <- RV$df_identifie %>%
-      filter(if(giraph_select() == 'NA') is.na(Classe) else Classe == giraph_select() | Super_Classe == giraph_select()) %>%
-      arrange(desc(Montant)) %>%
-      mutate(Date = as.character(Date)) %>%
-      select(Date, libelle, Montant, Compte)
+        filter(if(giraph_select() == 'NA') is.na(Classe) else Classe == giraph_select() | Super_Classe == giraph_select()) %>%
+        arrange(desc(Montant)) %>%
+        mutate(Date = as.character(Date)) %>%
+        select(Date, libelle, Montant, Compte)
+      
+      return(tab)
+    }
     
-    if(input$typeGraph != 'BonbonMiel_unique_giraph' & !is.null(giraph_select())){
+    if(input$typeGraph == 'histogramme_Fasse_a_Fasse' & !is.null(giraph_select())){
+      print('ICI')
+      encadrement_periode <- de_periodifier(as.Date(str_extract(giraph_select(), '^[^/]+')), input$echelle)
+      selected_sens <- str_extract(giraph_select(), '[^/]+$')
+      
+      print(selected_sens)
+      
+      tab <- RV$df_identifie %>%
+        filter((selected_sens == 'Credit') == (Montant > 0),
+               Date >= encadrement_periode$deb, Date <= encadrement_periode$fin) %>%
+        arrange(desc(abs(Montant))) %>%
+        mutate(Date = as.character(Date)) %>%
+        select(Date, libelle, Montant, Compte)
+      
+      return(tab)
+    }
+    
+    
+    
+    if(!is.null(giraph_select())){
       
       select_Classe <- str_extract(giraph_select(), '^[^/]+')
       

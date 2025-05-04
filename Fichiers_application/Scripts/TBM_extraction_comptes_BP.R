@@ -2,8 +2,11 @@
 # Objectif : Extraction et pré-formatage des extraction de 
 #            compte Banque Postale en csv
 # 
+#     IN : dir
+#     OUT: releve[c('Date', 'libelle', 'Montant', 'Compte')]
+#
 # A.Jorant - Dec 2024
-
+#
 # R version 4.4.
 # encoding UTF8
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤

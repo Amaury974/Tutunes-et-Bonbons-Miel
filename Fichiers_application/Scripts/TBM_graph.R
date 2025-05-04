@@ -245,7 +245,7 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col, sens = 'Debit'){
            periode_an = factor(periode_an, ordre_factor_periodes)) %>%
     as.data.frame()
   
-
+  
   df_bbm_lab <- df_bbm_periode %>%
     # group_by(Super_Classe, Label_periode, periode) %>%
     # summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
@@ -453,7 +453,8 @@ histogramme_Classe <- function(df_resume_periode, list_col, sens = 'Debit'){
     mutate(Montant = abs(Montant)) %>%
     arrange(Classe) %>%
     mutate(Label_periode = str_c(format(periode, '%Y'),' T',round(as.numeric(format(periode, '%m'))/3)),
-           sC_C = str_c(Super_Classe, '_', Classe),
+           # sC_C = str_c(Super_Classe, '_', Classe),
+           sC_C = Classe,
            sC_C = factor(sC_C, unique(sC_C))) %>%
     group_by(Super_Classe, Classe, sC_C, Label_periode, periode) %>%
     summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
@@ -477,7 +478,7 @@ histogramme_Classe <- function(df_resume_periode, list_col, sens = 'Debit'){
     geom_bar_interactive(aes(x = sC_C, 
                              y = Montant,
                              fill = Label_periode,
-                             tooltip=Classe_label, 
+                             tooltip = Classe_label, 
                              data_id = Classe_periode),
                          stat = "identity", position = position_dodge()) +
     labs(fill = 'periode', y='Débit (€)') +
@@ -512,29 +513,33 @@ histogramme_Classe_giraph <- histogramme_Classe
 # ~~~~{    Comparaison Crédits Débits    }~~~~
 
 histogramme_Fasse_a_Fasse <- function(df_resume_periode, list_col){
-  
+
   # ordre dans lequel on veut voir apparaitre les colonnes du graphiques : periode sans l'année
   # ordre_factor_periodes <- c(format(as.Date(str_c('01-', 1:12,'-2000')),'%B'), # tous les mois
   #                            'janv. févr. mars', 'avr. mai juin', 'juil. août sept.', 'oct. nov. déc.', # tous les trimestres
   #                            'janvier à juin', 'juiller à décembre' # semestres
   # )
-  
+
   echelle <- quelle_periode(label = df_resume_periode[1,"Label_periode"])
-  
-  
+
+
   df_fasse_a_fasse <- df_resume_periode %>%
     mutate(sens = if_else(Montant > 0, 'Credit', 'Debit'),
            periode_date = periode,
            periode = periodifier(periode, echelle = echelle)) %>%
-    
+
     group_by(periode_date, periode, sens) %>%
-    summarise(Montant = sum(Montant, na.rm = TRUE))
-  
-  
-  
+    summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
+    mutate(label_montant = paste(abs(round(Montant)), '€'),
+           id = paste0(periode_date, '/', sens))
+
+
+
   myplot <- ggplot(df_fasse_a_fasse, aes(x = Montant, y = periode, fill = sens)) +
-    geom_col(aes(x=-Montant), fill= 'grey', orientation = 'y') + 
-    geom_col_interactive(aes(tooltip = abs(Montant)), orientation = 'y') + 
+    geom_col(aes(x=-Montant), fill= 'grey', orientation = 'y') +
+    geom_col_interactive(aes(tooltip = label_montant,
+                             data_id = id),
+                         orientation = 'y') +
     scale_fill_brewer(palette = 'Dark2') +
     geom_text(data=filter(df_fasse_a_fasse, sens== 'Debit'), aes(label = periodifier(periode_date, echelle, 'Long')), x = 0) +
     scale_y_discrete(limits = rev) +
@@ -544,7 +549,7 @@ histogramme_Fasse_a_Fasse <- function(df_resume_periode, list_col){
           axis.title.y = element_blank()
     ) +
     guides(fill = 'none')
-  
+
 
   interactive_plot <- girafe(ggobj = myplot,
                              bg = "transparent",
@@ -552,12 +557,14 @@ histogramme_Fasse_a_Fasse <- function(df_resume_periode, list_col){
                              width_svg = 10,
                              options = list(
                                opts_hover(css = "filter: brightness(95%)"),
-                               opts_hover_inv(css = "opacity:0.4;")
+                               opts_hover_inv(css = "opacity:0.4;"),
+                               opts_selection(css = 'stroke:black',
+                                              type = "single")
                              ))
-  
+
   interactive_plot
-  
-  }
+
+}
 
 
 
@@ -705,79 +712,173 @@ radar <- function(df_resume_periode, list_col){
 
 
 
-Coco_Fesse <- function(df_resume_periode, list_col, sens = 'Debit'){
-  hsize = 3
-  
-  
-  # df <- data.frame(a=1:100)
-  
-  
-  
-  
-  
-  
-  p2 <-ggplot()+
-    # bande externe : superClasse
-    geom_bar(aes(x = 1.2 + hsize,
-                 y       = 1:100),
-             width   = 0.4,
-             stat    = "identity",
-             position = position_stack(reverse = TRUE)) +
-    
-    coord_radial("y", start=pi, end = 2*pi, clip = 'off') +
-    
-    # coord_polar("y", start=0, end = pi, clip = 'off') +
-    xlim(c(0, 1.5+hsize)) +
-    theme_void() +
-    theme(strip.text.y = element_text( angle = 270, vjust = 1),
-          strip.text.x = element_text( vjust = 1)) +
-    theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
-  
-  p1 <-ggplot()+
-    # bande externe : superClasse
-    geom_bar(aes(x = 1.2 + hsize,
-                 y       = 1:100),
-             width   = 0.4,
-             stat    = "identity",
-             position = position_stack(reverse = TRUE)) +
-    
-    coord_radial("y", start=0, end = pi, clip = 'off') +
-    
-    # coord_polar("y", start=0, end = pi, clip = 'off') +
-    xlim(c(0, 1.5+hsize)) +
-    theme_void() +
-    theme(strip.text.y = element_text( angle = 270, vjust = 1),
-          strip.text.x = element_text( vjust = 1)) +
-    theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
-  
-  
-  p1 <- ggplot(mtcars,aes(x=1:nrow(mtcars),y=mpg)) + geom_point()
-  
-  p2 <- ggplot(aes(x=1.2 + hsize,, y=1:100)) +
-    geom_rect(aes_string(ymax="ymax", ymin="ymin", xmax="2.5", xmin="2.0")) +
-    # geom_text(aes_string(label="label2",x="3",y="ypos",hjust="hjust")) +
-    coord_polar(theta='y') +
-    expand_limits(x = c(2, 4)) + #change x-axis range limits here
-    guides(fill=guide_legend(override.aes=list(colour=NA))) +
-    theme(axis.line = element_blank(),
-          axis.ticks=element_blank(),
-          axis.title=element_blank(),
-          axis.text.y=element_blank(),
-          axis.text.x=element_blank(),
-          panel.border = element_blank(),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.background = element_rect(fill = "white"),
-          plot.margin = unit(c(-2, 0, -2, -.1), "cm"),
-          legend.position = "none") +
-    scale_x_discrete(limits=c(0, 1))
-  
-  final <- arrangeGrob(p2,p1,layout_matrix = cbind(c(1),c(2)),
-                       widths=c(4),heights=c(2.5,4),respect=TRUE)
-  
-  
-  
-}
+# Coco_Fesse <- function(df_resume_periode, list_col){
+#   hsize = 3
+#   
+#   # ordre dans lequel on veut voir apparaitre les colonnes du graphiques : periode sans l'année
+#   ordre_factor_periodes <- c(format(as.Date(str_c('01-', 1:12,'-2000')),'%B'), # tous les mois
+#                              'janv. févr. mars', 'avr. mai juin', 'juil. août sept.', 'oct. nov. déc.', # tous les trimestres
+#                              'janvier à juin', 'juiller à décembre' # semestres
+#   )
+#   
+#   
+#   
+#   df_bbm_periode <- df_resume_periode %>%
+#     mutate(Direction = if_else(Montant > 0, 'Credit', 'Debit'),
+#            Montant = abs(Montant)) %>%
+#     # group_by(periode) %>%
+#     arrange(Classe) %>% # les Classes sont des facteurs ordonnées selon le cout total de leurs Super_Classes respectives
+#     mutate(Classe_label = paste(Classe,'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
+#            Classe_periode = paste0(Classe,'/',periode)) %>%      # utilisé pour identifier les zones
+#     
+#     group_by(Super_Classe, periode) %>%
+#     mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
+#            Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%           # utilisé pour identifier les zones
+#     mutate(an = format(periode, '%Y'),
+#            periode_an = str_trim(str_extract(Label_periode, '^.{3,4}\\D+')), # on isole la premiere partie du Label, avant l'année
+#            periode_an = factor(periode_an, ordre_factor_periodes)) %>%
+#     group_by(periode, Direction) %>%
+#     mutate(  = Montant / sum(Montant)) %>%
+#     as.data.frame()
+#   
+#   df_bbm_lab <- df_bbm_periode %>%
+#     group_by(Label_periode) %>%
+#     # mutate(total_trim = sum(Montant)) %>%
+#     mutate(ylab = cumsum(Montant_part)-0.5*Montant_part) %>%
+#     # décallage en fonction de la position dans le cercle
+#     ungroup() 
+#   
+#   
+#   
+#   
+#   df_bbm_lab <- df_bbm_periode %>%
+#     group_by(Label_periode) %>%
+#     mutate(total_trim = sum(Montant)) %>%
+#     mutate(ylab = cumsum(Montant)-0.5*Montant) %>%
+#     # décallage en fonction de la position dans le cercle
+#     ungroup() %>%
+#     mutate(max_total = max(total_trim),
+#            # direction du text par rapport au point d'ancrage -> vers l'extérieur du cercle :
+#            hjust_dir = 0.5-sinpi(2*ylab/max_total)/2,
+#            vjust_dir = 0.5-cospi(2*ylab/max_total)/2) %>% # 0 : vers le haut ; 1 : vers le bas
+#     mutate(an = format(periode, '%Y'),
+#            periode_an = str_trim(str_extract(Label_periode, '^.{4}\\D+')), # on isole la premiere partie du Label, avant l'année
+#            periode_an = factor(periode_an, ordre_factor_periodes)) %>%
+#     # retrait des trop petites Classes pour eviter les chevauchements de label
+#     mutate(Super_Classe = str_c(signif(Montant / (0.02*max_total), 3),
+#                                 signif(pmax(0.3, abs(2*vjust_dir-1)),3),
+#                                 signif((Montant / (0.02*max_total)) / pmax(0.3, abs(2*vjust_dir-1)) ,3), sep = ' ')) %>%
+#     filter((Montant / (0.08*max_total*pmax(0.2, abs(2*vjust_dir-1)))) > 1)
+# 
+#   echelle <- quel_periode(df_resume_periode$Label_periode)
+# 
+#   N_col <- if( echelle != 'An' ) length(unique(df_bbm_periode$periode_an)) else length(unique(df_bbm_periode$an))
+#   N_lig <- if( echelle != 'An' ) length(unique(df_bbm_periode$an)) else 1
+# 
+#   
+#   
+#   filter(Montant_part, periode)
+#   
+#   
+#   df_bbm_periode
+#   
+#   test=data.frame(classe = LETTERS[1:5],
+#                   note = sort(round(runif(5)*100)))
+#   test2<- test
+#   test2$note <- c(test[2:5, 'note'],100)
+#   
+#   
+#   glm('classe~note', family="binomial",bind_rows(test, test2)) %>%
+#   predict(data.frame(note=1:10*10))
+# 
+#   A <- B <- data.frame(X=0:1000/1000) %>%
+#     mutate(Y=1-(X-0.5)^2)
+#   
+#   B$X <- B$X+1
+#   
+#   bind_rows(A,B) %>%
+#     ggplot(aes(X,Y)) +
+#     geom_line(linewidth = 30, lineend = "round") +
+#     # geom_point() +
+#     coord_polar("x", start=0, clip = 'off') +
+#     theme_void() +
+#     ylim(c(0, 1))
+#   
+#   
+#   
+#   
+#   coord_polar()
+#   # coord_radial("y", start=0, end = pi, clip = 'off') +
+#   
+#   
+#   
+#   
+#   coord_polar("y", start=0, clip = 'off') +
+#     xlim(c(0, 1.5+hsize)) +
+#     
+#     
+#     p2 <-ggplot()+
+#     # bande externe : superClasse
+#     geom_bar(aes(x = 1.2 + hsize,
+#                  y       = 1:100),
+#              width   = 0.4,
+#              stat    = "identity",
+#              position = position_stack(reverse = TRUE)) +
+#     
+#     coord_radial("y", start=pi, end = 2*pi, clip = 'off') +
+#     
+#     # coord_polar("y", start=0, end = pi, clip = 'off') +
+#     xlim(c(0, 1.5+hsize)) +
+#     theme_void() +
+#     theme(strip.text.y = element_text( angle = 270, vjust = 1),
+#           strip.text.x = element_text( vjust = 1)) +
+#     theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+#   
+#   p1 <-ggplot()+
+#     # bande externe : superClasse
+#     geom_bar(aes(x = 1.2 + hsize,
+#                  y       = 1:100),
+#              width   = 0.4,
+#              stat    = "identity",
+#              position = position_stack(reverse = TRUE)) +
+#     
+#     coord_radial("y", start=0, end = pi, clip = 'off') +
+#     
+#     # coord_polar("y", start=0, end = pi, clip = 'off') +
+#     xlim(c(0, 1.5+hsize)) +
+#     theme_void() +
+#     theme(strip.text.y = element_text( angle = 270, vjust = 1),
+#           strip.text.x = element_text( vjust = 1)) +
+#     theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+#   
+#   
+#   p1 <- ggplot(mtcars,aes(x=1:nrow(mtcars),y=mpg)) + geom_point()
+#   
+#   p2 <- ggplot(aes(x=1.2 + hsize,, y=1:100)) +
+#     geom_rect(aes_string(ymax="ymax", ymin="ymin", xmax="2.5", xmin="2.0")) +
+#     # geom_text(aes_string(label="label2",x="3",y="ypos",hjust="hjust")) +
+#     coord_polar(theta='y') +
+#     expand_limits(x = c(2, 4)) + #change x-axis range limits here
+#     guides(fill=guide_legend(override.aes=list(colour=NA))) +
+#     theme(axis.line = element_blank(),
+#           axis.ticks=element_blank(),
+#           axis.title=element_blank(),
+#           axis.text.y=element_blank(),
+#           axis.text.x=element_blank(),
+#           panel.border = element_blank(),
+#           panel.grid.major = element_blank(),
+#           panel.grid.minor = element_blank(),
+#           panel.background = element_rect(fill = "white"),
+#           plot.margin = unit(c(-2, 0, -2, -.1), "cm"),
+#           legend.position = "none") +
+#     scale_x_discrete(limits=c(0, 1))
+#   
+#   final <- arrangeGrob(p2,p1,layout_matrix = cbind(c(1),c(2)),
+#                        widths=c(4),heights=c(2.5,4),respect=TRUE)
+#   
+#   
+#   
+# }
 
 
 

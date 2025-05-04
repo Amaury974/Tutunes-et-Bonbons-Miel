@@ -130,16 +130,7 @@ ui <- navbarPage(
       ),
     ),
     
-    
-    
-    fluidRow(
-      column(6,
-             h3('Classification'),
-             # ~~~~{    nouvel element de classification    }~~~~
-             
-             
-             
-             p(HTML("<p>La classification est faite en recherchant des Marqueurs dans les libellés des lignes de compte.</p>
+    p(HTML("<p>La classification est faite en recherchant des Marqueurs dans les libellés des lignes de compte.</p>
 <p>Pour ajouter un nouvel élément de classification, veuillez renseigner les éléments suivants :</p>
 
 <p> <b>Choix de la Classe</b> </p>
@@ -153,10 +144,19 @@ ui <- navbarPage(
 <p> <b>Marqueur</b> </p>
 <p>Le marqueur peut être simplement une parite ou l'entièreté d'un libellé de ligne de compte.</p>
 <p>Si vous souhaitez indiquer qu'un marqueur est prioritaire par rapport aux autres, ajoutez 1/ avant le marqueur. ex:1/AUCHAN CAR</p>
-<p>Si vous  souhaitez répartir une dépense sur 10 mois, ajoutez AMORTI10/ avant le marqueur. procédez de même avec le nombre de mois désirés.</p>
+<p>Si vous  souhaitez répartir une dépense sur 10 ans, ajoutez AMORTI10/ avant le marqueur. Procédez de même avec le nombre d'années désirés.</p>
 
 <p> <b>Date (facultatif)</b> </p>
 <p>Enfin vous pouvez ajouter une date et ainsi spécifier une date pour laquelle le marqueur sera recherché.</p> <br>")),
+    
+    
+    fluidRow(
+      column(6,
+             h3('Classification'),
+             # ~~~~{    nouvel element de classification    }~~~~
+             
+             
+             
              
              # p(HTML('<p>Nouvel element de classification : <i> <small> laisser super Classe vide pour masquer </small> </i> </p>')), 
              fluidRow(
@@ -216,7 +216,7 @@ ui <- navbarPage(
                                )
                         ),
                         
-                        column(3,
+                        column(2,
                                br(),
                                actionButton(
                                  inputId = 'MaJ_Classe',
@@ -224,7 +224,18 @@ ui <- navbarPage(
                                  icon = icon('arrows-rotate')
                                ),
                                # textOutput('erreur_nvclassif')
+                        ),
+                        
+                        column(2,
+                               br(),
+                               actionButton(
+                                 inputId = 'Plus_ligne',
+                                 label = '',
+                                 icon = icon('plus')
+                               ),
+                               # textOutput('erreur_nvclassif')
                         )
+                        
                       )
                )
              ),
