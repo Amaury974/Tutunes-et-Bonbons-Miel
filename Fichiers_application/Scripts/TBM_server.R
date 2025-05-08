@@ -28,7 +28,9 @@ server <- function(input, output) {
   
   # print(list.files(dir_sauvegarde))
   if(!inherits(RDS_files, "try-error")) {
-    cat('>> Initialisation > chargement sauvegarde\n\n')
+    cat('>> Initialisation > chargement sauvegarde\n')
+    cat('                    depuis :', dir_sauvegarde, '\n')
+    cat('                            ', str_c(names(RDS_files), collapse = '                            \n'), '\n')
     # load('save.RData')
     # RDS_files <- readRDS('save.RDS')
     for(i in names(RDS_files))
@@ -119,7 +121,7 @@ server <- function(input, output) {
       cat('                            _ fin\n\n')
     }
   )
-
+  
   # # ~~~~{    Depuis résumé    }~~~~
   # observeEvent(
   #   input$input_resume,{
@@ -171,38 +173,57 @@ server <- function(input, output) {
   
   
   
-  # ~~~~{    bouton MaJ    }~~~~
+  # ~~~~{    bouton MaJ et Plus    }~~~~
+  type_Maj_Classe <- 'MaJ_Classe'
+  
   observeEvent(input$MaJ_Classe, {
+    cat('>> Identification > click MaJ_Classe _ 1\n')
+    type_Maj_Classe <<- 'MaJ_Classe'
+    cat('                                     _ fin\n\n')
+    
+  })
+  
+  observeEvent(input$Plus_ligne, {
+    cat('>> Identification > click Plus_ligne _ 1\n')
+    type_Maj_Classe <<- 'Plus_ligne'
+    cat('                                     _ fin\n\n')
+    
+  })
+  
+  #initialisation
+  
+  Nv_ligne <- c()
+  
+  observeEvent({input$MaJ_Classe ; input$Plus_ligne}, {
     cat('>> Identification > MaJ Classe _ 1\n')
     
     if(input$nv_Marq != ''){
-      cat('                             _ 2\n')
+      cat('                               _ 2\n')
       
       # !length(as.Date(character(0)))
       
       # print(input$nv_Date)
       
-      Nv_ligne <- data.frame(Super_Classe = str_extract(input$select_Classe, '^[^\\s]+'),
-                             Classe = str_extract(input$select_Classe, '[^\\s]+$'),
-                             Marqueur = toupper(input$nv_Marq),
-                             Date = if(length(input$nv_Date)) input$nv_Date else NA)
+      Nv_ligne <<- data.frame(Super_Classe = str_extract(input$select_Classe, '^[^\\s]+'),
+                              Classe = str_extract(input$select_Classe, '[^\\s]+$'),
+                              Marqueur = toupper(input$nv_Marq),
+                              Date = if(length(input$nv_Date)) input$nv_Date else NA)
       
       cat("                ajout d'une ligne :\n")
       print(Nv_ligne)
       
       RV$df_classif <- bind_rows(RV$df_classif, Nv_ligne)
       
-      
     }
     
     
     # Reset des champs
-    cat('                              _ 3\n')
+    cat('                                _ 3\n')
     updateTextInput(inputId = 'nv_Marq', value = '')
-    updateDateInput(inputId = 'nv_Date', value = NA)
+    suppressWarnings( updateDateInput(inputId = 'nv_Date', value = NA ) )
     
     
-    cat('                              _ fin\n\n')   
+    cat('                                _ fin\n\n')   
     
   })
   
@@ -212,7 +233,7 @@ server <- function(input, output) {
     cat('>> Identification > Update des identifications _ 1\n')
     
     # ~~~~{    On ré-identifie tout    }~~~~
-    df_identifie <- fun_classif(RV$df_identifie, RV$df_classif)
+    df_identifie <- f_classif(RV$df_identifie, RV$df_classif, Nv_ligne, type_Maj_Classe)
     
     cat('                                               _ 2\n')   
     
@@ -220,6 +241,7 @@ server <- function(input, output) {
       arrange(Super_Classe, Classe)
     
     RV$df_identifie <- df_identifie
+    
     
     
     cat('                                               _ fin\n\n')   
@@ -244,7 +266,7 @@ server <- function(input, output) {
     
     updateSelectizeInput(inputId = 'select_Classe', choices = CHOICES)
     
-    cat('                                   _ fin\n\n')   
+    cat('                                     _ fin\n\n')   
     
   }
   
@@ -260,7 +282,7 @@ server <- function(input, output) {
       
       cat('>> Identification > Render Classif\n\n')
       
-      mutate(RV$df_classif,
+      mutate(isolate(RV$df_classif),
              Date = format(Date, '%d/%m/%Y'),
              Classe = as.factor(Classe),
              Super_Classe = as.factor(Super_Classe))
@@ -278,6 +300,25 @@ server <- function(input, output) {
     
   )
   
+  #proxy de DT pour le manipuler sans recharger tout l'affichage
+  proxy_DT <- dataTableProxy('tab_classif')
+  
+  observeEvent(RV$df_classif, {
+    cat('>> Identification > MaJ tab Classif _ 1\n')
+    
+    if(type_Maj_Classe == 'Plus_ligne'){
+      cat('                                    _ Plus_ligne\n')   
+      proxy_DT %>% addRow(Nv_ligne)
+    }
+    
+    if(type_Maj_Classe == 'MaJ_Classe'){
+      cat('                                    _ MaJ_Classe\n')  
+      replaceData(proxy_DT, RV$df_classif, resetPaging = TRUE)
+    }
+    
+    cat('                                    _ fin\n\n')
+  })
+  
   
   # ~~~~{    Tab non assignés    }~~~~
   output$tab_nonIdentifies <- renderTable({
@@ -294,7 +335,7 @@ server <- function(input, output) {
         mutate(Date = format(Date, '%d/%m/%Y')) %>%
         select(Date, libelle, Montant, Compte)
     }
-    cat('>>                              _ fin\n\n')
+    cat('                                   _ fin\n\n')
     
     tab
   })
@@ -334,7 +375,7 @@ server <- function(input, output) {
     if(!is.null(RV$df_identifie))
       tab <-f_resume(RV$df_identifie, input$echelle)
     
-    cat('                       _ fin\n\n')
+    cat('                                  _ fin\n\n')
     
     tab
   })
@@ -347,7 +388,7 @@ server <- function(input, output) {
     if(!is.null(RV$df_identifie))
       tab <-f_couleurs(df_resume_periode())
     
-    cat('                         _ fin\n\n')
+    cat('                           _ fin\n\n')
     
     tab
   })
@@ -373,11 +414,11 @@ server <- function(input, output) {
     CHOICES <- periodifier(df_resume_periode()$periode, input$echelle, 'Court') %>%
       unique()
     
-    cat('Tous les choix :', str_c(CHOICES, sep=' ; '), '\n')
+    cat('Tous les choix :', str_c(CHOICES, collapse =' ; '), '\n')
     
     SELECTED <- Periode_defaut(df_resume_periode(), RV$df_identifie)
     
-    cat('Bornes pré-selectionnées :', str_c(SELECTED, sep=' ; '),'\n')
+    cat('Bornes pré-selectionnées :', str_c(SELECTED, collapse =' ; '),'\n')
     
     cat('                                   _ 2\n')
     

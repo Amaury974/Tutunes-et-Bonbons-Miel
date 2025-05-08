@@ -714,15 +714,15 @@ radar <- function(df_resume_periode, list_col){
 
 # Coco_Fesse <- function(df_resume_periode, list_col){
 #   hsize = 3
-#   
+# 
 #   # ordre dans lequel on veut voir apparaitre les colonnes du graphiques : periode sans l'année
 #   ordre_factor_periodes <- c(format(as.Date(str_c('01-', 1:12,'-2000')),'%B'), # tous les mois
 #                              'janv. févr. mars', 'avr. mai juin', 'juil. août sept.', 'oct. nov. déc.', # tous les trimestres
 #                              'janvier à juin', 'juiller à décembre' # semestres
 #   )
-#   
-#   
-#   
+# 
+# 
+# 
 #   df_bbm_periode <- df_resume_periode %>%
 #     mutate(Direction = if_else(Montant > 0, 'Credit', 'Debit'),
 #            Montant = abs(Montant)) %>%
@@ -730,7 +730,7 @@ radar <- function(df_resume_periode, list_col){
 #     arrange(Classe) %>% # les Classes sont des facteurs ordonnées selon le cout total de leurs Super_Classes respectives
 #     mutate(Classe_label = paste(Classe,'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
 #            Classe_periode = paste0(Classe,'/',periode)) %>%      # utilisé pour identifier les zones
-#     
+# 
 #     group_by(Super_Classe, periode) %>%
 #     mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
 #            Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%           # utilisé pour identifier les zones
@@ -740,17 +740,17 @@ radar <- function(df_resume_periode, list_col){
 #     group_by(periode, Direction) %>%
 #     mutate(  = Montant / sum(Montant)) %>%
 #     as.data.frame()
-#   
+# 
 #   df_bbm_lab <- df_bbm_periode %>%
 #     group_by(Label_periode) %>%
 #     # mutate(total_trim = sum(Montant)) %>%
 #     mutate(ylab = cumsum(Montant_part)-0.5*Montant_part) %>%
 #     # décallage en fonction de la position dans le cercle
-#     ungroup() 
-#   
-#   
-#   
-#   
+#     ungroup()
+# 
+# 
+# 
+# 
 #   df_bbm_lab <- df_bbm_periode %>%
 #     group_by(Label_periode) %>%
 #     mutate(total_trim = sum(Montant)) %>%
@@ -775,27 +775,27 @@ radar <- function(df_resume_periode, list_col){
 #   N_col <- if( echelle != 'An' ) length(unique(df_bbm_periode$periode_an)) else length(unique(df_bbm_periode$an))
 #   N_lig <- if( echelle != 'An' ) length(unique(df_bbm_periode$an)) else 1
 # 
-#   
-#   
+# 
+# 
 #   filter(Montant_part, periode)
-#   
-#   
+# 
+# 
 #   df_bbm_periode
-#   
+# 
 #   test=data.frame(classe = LETTERS[1:5],
 #                   note = sort(round(runif(5)*100)))
 #   test2<- test
 #   test2$note <- c(test[2:5, 'note'],100)
-#   
-#   
+# 
+# 
 #   glm('classe~note', family="binomial",bind_rows(test, test2)) %>%
 #   predict(data.frame(note=1:10*10))
 # 
 #   A <- B <- data.frame(X=0:1000/1000) %>%
 #     mutate(Y=1-(X-0.5)^2)
-#   
+# 
 #   B$X <- B$X+1
-#   
+# 
 #   bind_rows(A,B) %>%
 #     ggplot(aes(X,Y)) +
 #     geom_line(linewidth = 30, lineend = "round") +
@@ -803,20 +803,20 @@ radar <- function(df_resume_periode, list_col){
 #     coord_polar("x", start=0, clip = 'off') +
 #     theme_void() +
 #     ylim(c(0, 1))
-#   
-#   
-#   
-#   
+# 
+# 
+# 
+# 
 #   coord_polar()
 #   # coord_radial("y", start=0, end = pi, clip = 'off') +
-#   
-#   
-#   
-#   
+# 
+# 
+# 
+# 
 #   coord_polar("y", start=0, clip = 'off') +
 #     xlim(c(0, 1.5+hsize)) +
-#     
-#     
+# 
+# 
 #     p2 <-ggplot()+
 #     # bande externe : superClasse
 #     geom_bar(aes(x = 1.2 + hsize,
@@ -824,16 +824,16 @@ radar <- function(df_resume_periode, list_col){
 #              width   = 0.4,
 #              stat    = "identity",
 #              position = position_stack(reverse = TRUE)) +
-#     
+# 
 #     coord_radial("y", start=pi, end = 2*pi, clip = 'off') +
-#     
+# 
 #     # coord_polar("y", start=0, end = pi, clip = 'off') +
 #     xlim(c(0, 1.5+hsize)) +
 #     theme_void() +
 #     theme(strip.text.y = element_text( angle = 270, vjust = 1),
 #           strip.text.x = element_text( vjust = 1)) +
 #     theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
-#   
+# 
 #   p1 <-ggplot()+
 #     # bande externe : superClasse
 #     geom_bar(aes(x = 1.2 + hsize,
@@ -841,19 +841,19 @@ radar <- function(df_resume_periode, list_col){
 #              width   = 0.4,
 #              stat    = "identity",
 #              position = position_stack(reverse = TRUE)) +
-#     
+# 
 #     coord_radial("y", start=0, end = pi, clip = 'off') +
-#     
+# 
 #     # coord_polar("y", start=0, end = pi, clip = 'off') +
 #     xlim(c(0, 1.5+hsize)) +
 #     theme_void() +
 #     theme(strip.text.y = element_text( angle = 270, vjust = 1),
 #           strip.text.x = element_text( vjust = 1)) +
 #     theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
-#   
-#   
+# 
+# 
 #   p1 <- ggplot(mtcars,aes(x=1:nrow(mtcars),y=mpg)) + geom_point()
-#   
+# 
 #   p2 <- ggplot(aes(x=1.2 + hsize,, y=1:100)) +
 #     geom_rect(aes_string(ymax="ymax", ymin="ymin", xmax="2.5", xmin="2.0")) +
 #     # geom_text(aes_string(label="label2",x="3",y="ypos",hjust="hjust")) +
@@ -872,12 +872,12 @@ radar <- function(df_resume_periode, list_col){
 #           plot.margin = unit(c(-2, 0, -2, -.1), "cm"),
 #           legend.position = "none") +
 #     scale_x_discrete(limits=c(0, 1))
-#   
+# 
 #   final <- arrangeGrob(p2,p1,layout_matrix = cbind(c(1),c(2)),
 #                        widths=c(4),heights=c(2.5,4),respect=TRUE)
-#   
-#   
-#   
+# 
+# 
+# 
 # }
 
 

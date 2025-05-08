@@ -23,9 +23,6 @@
 # }
 
 
-
-
-
 fun_classif <- function(releve, df_classif){
   
   
@@ -36,7 +33,7 @@ fun_classif <- function(releve, df_classif){
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   # on peut fournir le df_identifié en tant que releve mais il faut recalculer les amortis
   if('Classe' %in% names(releve)){
-    print('re-identification')
+    # print('re-identification')
     releve <- releve %>%
       filter(!str_detect(libelle, '^Amortissement')) %>%
       mutate(Montant = if_else(str_detect(libelle, 'amortis en'),
@@ -168,6 +165,23 @@ fun_classif <- function(releve, df_classif){
 
 
 
+
+
+f_classif <- function(releve, df_classif, Nv_ligne, type_Maj_Classe){
+  
+  if(type_Maj_Classe == 'MaJ_Classe'){
+    df_identifie <- fun_classif(releve, df_classif)
+  }
+  
+  if(type_Maj_Classe == 'Plus_ligne'){
+    df_identifie <- filter(releve, is.na(Classe)) %>%
+    fun_classif(Nv_ligne) %>%
+    bind_rows(filter(releve, !is.na(Classe)))
+  }
+  
+  df_identifie
+  
+  }
 
 
 

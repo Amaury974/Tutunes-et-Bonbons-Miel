@@ -17,3 +17,6 @@ df_classif <- read.csv2('../Source/classification_defaut.csv') %>%
   mutate(Date = as.Date(Date))
 
 cat('       _ fin\n')
+
+
+

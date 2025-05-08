@@ -206,14 +206,14 @@ ui <- navbarPage(
                         #          label = '')
                         # ),
                         column(8,
-                               dateInput(
+                               suppressWarnings(dateInput(
                                  inputId = 'nv_Date',
                                  label = "(Date)",
                                  format = 'dd/mm/yyyy',
                                  language = 'fr',
                                  value = '',
                                  weekstart = 1
-                               )
+                               ))
                         ),
                         
                         column(2,
@@ -356,7 +356,7 @@ ui <- navbarPage(
     column(12,
            tableOutput(outputId = "data_table")
     )
-  ),
+  )
   
   
 )
