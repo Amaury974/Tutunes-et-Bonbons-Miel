@@ -19,7 +19,7 @@ ui <- navbarPage(
   
   tags$img(
     src = "logo_TBM_dessature.png",
-    alt = 'logo TnBBM',
+    alt = 'logo TBM',
     style = 'position: fixed ; right: 10% ; z-index: -1',
     height = '90%'
   ),
@@ -312,6 +312,7 @@ ui <- navbarPage(
                  'histogramme par periode'='histogramme_periode',
                  'histogramme comparaison par Classe'='histogramme_Classe',
                  'comparaison des dépenses et recettes'='histogramme_Fasse_a_Fasse',
+                 'comparaison Fesse à Fesse'='Fesses',
                  'courbes empilés (in proogress)'='Courbe_empile_giraph')
              )
       ), 

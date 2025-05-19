@@ -11,7 +11,7 @@
 # encoding UTF8
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
 
-# dir=all_dir[38]
+# dir=all_dir[51:55]
 f_diff_extraction <- function(dir, .dir_name=dir){
   
   .dir_name <- str_c('/', .dir_name)
@@ -53,7 +53,7 @@ f_diff_extraction <- function(dir, .dir_name=dir){
   # for(dir_i in filter(input_data, type == 'text/csv')$datapath){
   for(i in which(str_detect(.dir_name, 'HistoriqueOperations.+csv$'))){
     print(.dir_name[i])
-    releve_Fortuneo <- bind_rows(releve_Fortuneo, extraction_Fortuneo(dir[i], paste('Fortuneo', str_extract(.dir_name[i], '\\d+'))))
+    releve_Fortuneo <- bind_rows(releve_Fortuneo, extraction_Fortuneo(dir = dir[i], .force_compte = paste('Fortuneo', str_extract(.dir_name[i], '\\d+'))))
   }
   
   # ~~~~{    Jointure    }~~~~
