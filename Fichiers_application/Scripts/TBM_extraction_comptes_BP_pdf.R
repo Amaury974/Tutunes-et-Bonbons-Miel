@@ -2,6 +2,10 @@
 # Objectif : Extraction et pré-formatage du classeur de relevé de 
 #            compte Banque Postale en pdf 
 # 
+# 
+#     IN : dir
+#     OUT: releve[c('Date', 'libelle', 'Montant', 'Compte')]
+# 
 # A.Jorant - Nov 2024
 
 # R version 4.4.1
@@ -15,7 +19,7 @@
 
 
 # dir_PDF <- "./releve_CCP2006014Y038_20240812.pdf"
-# dir_PDF=dir
+# dir_PDF=all_dir[37]
 # dir_PDF= "D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Data/Relevés/releve_CCP2006014Y038_20240112.pdf" 
 
 extraction_BP_pdf <- function(dir_PDF){
@@ -102,7 +106,7 @@ extraction_BP_pdf <- function(dir_PDF){
   # print(PDF_3)
   
   # list_split <- str_split(PDF_3$reste, '_SAUT_DE_LIGNE_')
-  PDF_3$montant <- str_extract(PDF_3$reste, '(\\d+\\s)?\\d{1,3},\\d{2}') %>%
+  PDF_3$Montant <- str_extract(PDF_3$reste, '(\\d+\\s)?\\d{1,3},\\d{2}') %>%
     str_remove('\\s') %>%
     as.numeric2()
   
@@ -121,15 +125,13 @@ extraction_BP_pdf <- function(dir_PDF){
   
   # dir_PDF=all_dir[1]
   
-  
+  PDF_3$Montant <- with(PDF_3, if_else(Direction == 'Credit', Montant, -Montant))
   
   # if(nrow(TEST)>0) warning(paste(c('\n', dir_PDF, TEST$lib), collapse = '\n'))
   
-  
-  
   PDF_4 <- PDF_3 %>%
-    filter(Direction == 'Debit') %>%
-    select(Date, libelle = lib,  Debit = montant) %>%
+    # filter(Direction == 'Debit') %>%
+    select(Date, libelle = lib,  Montant) %>%
     mutate(Compte = intitule)
   
 }

@@ -2,6 +2,10 @@
 # Objectif : Extraction et pré-formatage des extraction de 
 #            compte Fortuneo
 # 
+# 
+#       IN : dir
+#       OUT: releve[c('Date', 'libelle', 'Montant', 'Compte')]
+# 
 # A.Jorant - Nov 2024
 
 # R version 4.4.1
@@ -12,25 +16,29 @@
 # dir="D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Data/Relevés/HistoriqueOperations_018720443542_du_05_10_2023_au_05_11_2024.csv"
 
 extraction_Fortuneo <- function(dir, .force_compte = NULL){
+  
   # ~~~~{    Importation    }~~~~
   
-  releve <- read.csv2(dir, header=T, encoding = 'utf-8')
-  
+  releve <- suppressWarnings(try(read.csv2(dir, header=T,  fileEncoding = 'utf-8'), silent = TRUE))
+  if(!inherits(releve, "try-error")) releve <- read.csv2(dir, header=T, fileEncoding = 'WINDOWS-1252') # encoding par défaut de l'exportation fortuneo
   
   # ~~~~{    modifications de base    }~~~~
   
   names(releve) <- str_replace_all(names(releve), 'é', 'e')
   
   releve$Date <- as.Date(releve$Date.operation, format = '%d/%m/%Y')
-  releve <- select(releve, -Date.operation, -Date.valeur, -Credit)
+  
   
   
   # releve$moyen <- str_extract(releve$libelle,'(^.+(?=\\d{2}/\\d{2}))|(^\\S+)')
-  
-  releve$Debit <- -releve$Debit
-  releve <- filter(releve, !is.na(Debit))
+  releve$Montant <- pmin(releve$Debit, releve$Credit, na.rm = TRUE) # si tout va bien, il y a ou débit ou crédit mais jamais les deux, donc pmin renvoie l'unique valeur dispo
+  # releve$Debit <- -releve$Debit
+  releve <- filter(releve, !is.na(Montant))
   
   releve$Compte <- if(!is.null(.force_compte)) .force_compte else paste('Fortuneo', str_extract(dir, '\\d+'))
+  
+  
+  releve <- select(releve, libelle, Date, Montant, Compte)
   
   releve
 }
