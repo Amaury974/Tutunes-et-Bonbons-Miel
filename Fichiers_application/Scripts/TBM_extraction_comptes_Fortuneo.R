@@ -20,8 +20,11 @@ extraction_Fortuneo <- function(dir, .force_compte = NULL){
   # ~~~~{    Importation    }~~~~
   
   releve <- suppressWarnings(try(read.csv2(dir, header=T,  fileEncoding = 'utf-8'), silent = TRUE))
-  if(!inherits(releve, "try-error")) releve <- read.csv2(dir, header=T, fileEncoding = 'WINDOWS-1252') # encoding par défaut de l'exportation fortuneo
-  
+  if(!inherits(releve, "try-error")) {
+    releve <- read.csv2(dir, header=T, fileEncoding = 'WINDOWS-1252')[,1:5]  # encoding par défaut de l'exportation fortuneo
+    names(releve) <- c('Date.opération',	'Date.valeur',	'libellé',	'Débit',	'Crédit')
+    
+  }
   # ~~~~{    modifications de base    }~~~~
   
   names(releve) <- str_replace_all(names(releve), 'é', 'e')

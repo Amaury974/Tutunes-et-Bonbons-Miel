@@ -30,7 +30,7 @@ server <- function(input, output) {
   if(!inherits(RDS_files, "try-error")) {
     cat('>> Initialisation > chargement sauvegarde\n')
     cat('                    depuis :', dir_sauvegarde, '\n')
-    cat('                            ', str_c(names(RDS_files), collapse = '                            \n'), '\n')
+    cat('                            ', paste(names(RDS_files), collapse = '                            \n'), '\n')
     # load('save.RData')
     # RDS_files <- readRDS('save.RDS')
     for(i in names(RDS_files))
@@ -191,7 +191,6 @@ server <- function(input, output) {
   })
   
   #initialisation
-  
   Nv_ligne <- c()
   
   observeEvent({input$MaJ_Classe ; input$Plus_ligne}, {
@@ -205,8 +204,8 @@ server <- function(input, output) {
       # print(input$nv_Date)
       
       Nv_ligne <<- data.frame(Super_Classe = str_extract(input$select_Classe, '^[^\\s]+'),
-                              Classe = str_extract(input$select_Classe, '[^\\s]+$'),
-                              Marqueur = toupper(input$nv_Marq),
+                              Classe = str_extract(input$select_Classe, '(?<=\\s).+$'),
+                              Marqueur = str_trim(toupper(input$nv_Marq)),
                               Date = if(length(input$nv_Date)) input$nv_Date else NA)
       
       cat("                ajout d'une ligne :\n")
@@ -237,8 +236,8 @@ server <- function(input, output) {
     
     cat('                                               _ 2\n')   
     
-    RV$df_classif <- RV$df_classif %>%
-      arrange(Super_Classe, Classe)
+    # RV$df_classif <- RV$df_classif %>%
+    #   arrange(Super_Classe, Classe)
     
     RV$df_identifie <- df_identifie
     
@@ -330,7 +329,8 @@ server <- function(input, output) {
     
     if(!is.null(RV$df_identifie)){
       tab <- RV$df_identifie %>%
-        filter(is.na(Classe), !is.na(Montant)) %>%
+        # filter(is.na(Classe), !is.na(Montant)) %>%
+        filter(Super_Classe %in% c('RNA', 'DNA'), !is.na(Montant)) %>%
         arrange(desc(abs(Montant))) %>%
         mutate(Date = format(Date, '%d/%m/%Y')) %>%
         select(Date, libelle, Montant, Compte)
@@ -372,11 +372,16 @@ server <- function(input, output) {
     
     tab <- NULL
     
-    if(!is.null(RV$df_identifie))
-      tab <-f_resume(RV$df_identifie, input$echelle)
+    if(!is.null(RV$df_identifie)){
+       tab <- filter(RV$df_identifie, if(!input$ShowTransferts) !Super_Classe %in% c('RTransferts', 'DTransferts') else TRUE) %>%
+         f_resume(input$echelle)
+    }
+    cat('                                  _ 2\n')
+    
+    
+    # if(!input$ShowTransferts) tab <- filter(tab, !Super_Classe %in% c('RTransferts', 'DTransferts'))
     
     cat('                                  _ fin\n\n')
-    
     tab
   })
   
@@ -436,6 +441,7 @@ server <- function(input, output) {
     cat('>> Graphiques > graphique _ 1\n')
     cat('      ', input$typeGraph, '\n',
         '      ', input$echelle,'\n',
+        '      transferts : ', input$ShowTransferts,'\n',
         '      ', as.character(input$periode_subset[1]),'à', as.character(input$periode_subset[2]), '\n')
     
     

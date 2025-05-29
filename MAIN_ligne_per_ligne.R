@@ -58,9 +58,13 @@ theme_set(theme_light()) ; options(ggplot2.continuous.colour="viridis", ggplot2.
 
 # ~~~~{    chargement des fonctions    }~~~~
 setwd(dir_scripts)
+
 source('TBM_diff_extraction.R')
+source('TBM_extraction_comptes_BP_pdf.R')
 source('TBM_extraction_comptes_BP.R')
+source('TBM_extraction_comptes_SG.R')
 source('TBM_extraction_comptes_Fortuneo.R')
+
 source('TBM_identification_libelle.R')
 source('TBM_manipulation_tableaux.R')
 source('TBM_graph.R')
@@ -73,7 +77,10 @@ source('TBM_util.R')
 
 
 all_dir <- loca_dossier(dir_data,'\\d{7}')
-releve <- f_diff_extraction(all_dir)
+releve <- f_diff_extraction(all_dir[28:40])
+releve <- f_diff_extraction(dir = all_dir[1:5])
+releve <- f_diff_extraction(all_dir[c(1:5,30:54)])
+
 # releve2=releve
 # releve=releve2
 
@@ -90,23 +97,26 @@ df_classif <- read.csv2('Classification_dépenses.csv')%>%
 df_identifie <- fun_classif(releve, df_classif)
 
 
-setwd(dir_data)
-write.csv2(df_identifie, 'Releve_de_comptes_categorises(2).csv')
-
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 #####              Init. Manipulation des tableaux            #####
 #  ¤¤¤¤¤¤¤¤¤¤                   ¤¤                    ¤¤¤¤¤¤¤¤¤¤  #
 
-setwd(dir_data)
-# donnee <- readRDS('save.RDS')
-# df_identifie <- donnee$df_identifie
+echelle = 'Trimestre'
+ShowTransferts = F
 
-df_identifie <- read.csv2('Releve_de_comptes_categorises(2).csv') %>%
-  mutate(Date = as.Date(Date))
 
-df_resume_periode <- f_resume(df_identifie, 'Mois')
+df_resume_periode <- f_resume(df_identifie, echelle)
 list_col <- f_couleurs(df_resume_periode)
 
+
+
+periode_subset <- Periode_defaut(df_resume_periode, df_identifie)
+
+df_resume_periode <- filter(df_resume_periode,
+                    periode >= periodifier_Court_to_Date(periode_subset[1], echelle = echelle),
+                    periode <= periodifier_Court_to_Date(periode_subset[2], echelle = echelle))
+
+if(!ShowTransferts) df_resume_periode <- filter(df_resume_periode, !Super_Classe %in% c('RTransferts', 'DTransferts'))
 
 #,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#
 #************************************************************************************#
@@ -119,28 +129,11 @@ setwd(dir_fig)
 
 Verification_donnees(df_resume_periode, list_col, df_identifie)
 
-Gro_BonbonMiel(df_resume_periode, list_col)
+# Gro_BonbonMiel(df_resume_periode, list_col)
 
 Ti_BonbonMiel(df_resume_periode, list_col)
 
-
-
-# TEST
-i="An"
-for( i in c('Mois', 'Trimestre', 'Semestre', 'An')){
-df_resume_periode <- f_resume(df_identifie, i)
-
-Ti_BonbonMiel(df_resume_periode, list_col) %>%
-htmltools::save_html(str_c("BonbonMiel_",i,".html"))
-}
-
-
-
-
-
-# filter(releve, Date == max(Date))
-
-
+Fesses(df_resume_periode, list_col)
 
 
 

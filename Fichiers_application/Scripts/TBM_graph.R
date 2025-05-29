@@ -143,9 +143,9 @@ Gro_BonbonMiel <- function(df_resume_periode, list_col, sens = 'Debit'){
     arrange(Classe) %>%
     mutate(ylab = cumsum(Montant)-0.5*Montant,
            Classe_num = as.numeric(Classe),
-           Classe_label = paste(Classe,'\n', round(Montant), '€')) %>%
+           Classe_label = paste(str_remove(Classe, '.'),'\n', round(Montant), '€')) %>%
     group_by(Super_Classe) %>%
-    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€')) %>%
+    mutate(Super_Classe_label = paste(str_remove(Super_Classe,'.'),'\n', round(sum(Montant)), '€')) %>%
     as.data.frame()
   
   df_camembert_lab <- df_camembert %>%
@@ -234,48 +234,16 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col, sens = 'Debit'){
     mutate(Montant = abs(Montant)) %>%
     group_by(periode) %>%
     arrange(Classe) %>% # les Classes sont des facteurs ordonnées selon le cout total de leurs Super_Classes respectives
-    mutate(Classe_label = paste(Classe,'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
+    mutate(Classe_label = paste(str_remove(Classe, '.'),'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
            Classe_periode = paste0(Classe,'/',periode)) %>%      # utilisé pour identifier les zones
     
     group_by(Super_Classe, periode) %>%
-    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
+    mutate(Super_Classe_label = paste(str_remove(Super_Classe, '.'),'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
            Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%           # utilisé pour identifier les zones
     mutate(an = format(periode, '%Y'),
            periode_an = str_trim(str_extract(Label_periode, '^.{3,4}\\D+')), # on isole la premiere partie du Label, avant l'année
            periode_an = factor(periode_an, ordre_factor_periodes)) %>%
     as.data.frame()
-  
-  
-  # df_bbm_lab <- df_bbm_periode %>%
-  #   # group_by(Super_Classe, Label_periode, periode) %>%
-  #   # summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
-  #   group_by(Label_periode) %>%
-  #   mutate(total_trim = sum(Montant)) %>%
-  #   mutate(ylab = cumsum(Montant)-0.5*Montant) %>%
-  #   # décallage en fonction de la position dans le cercle
-  #   ungroup() %>%
-  #   mutate(max_total = max(total_trim),
-  #          # direction du text par rapport au point d'ancrage -> vers l'extérieur du cercle :
-  #          hjust_dir = 0.5-sinpi(2*ylab/max_total)/2, 
-  #          vjust_dir = 0.5-cospi(2*ylab/max_total)/2) %>% # 0 : vers le haut ; 1 : vers le bas
-  #   mutate(an = format(periode, '%Y'),
-  #          periode_an = str_trim(str_extract(Label_periode, '^.{4}\\D+')), # on isole la premiere partie du Label, avant l'année
-  #          periode_an = factor(periode_an, ordre_factor_periodes)) %>%
-  #   # retrait des trop petites Classes pour eviter les chevauchements de label
-  #   # filter(Montant > 0.02*max_total)
-  #   mutate(Super_Classe = str_c(signif(Montant / (0.02*max_total), 3),
-  #                               signif(pmax(0.3, abs(2*vjust_dir-1)),3),
-  #                               signif((Montant / (0.02*max_total)) / pmax(0.3, abs(2*vjust_dir-1)) ,3), sep = ' ')) %>%
-  #   # filter(((Montant / (0.02*max_total)) / pmax(0.2, abs(2*vjust_dir-1))) > 1)
-  #   filter((Montant / (0.08*max_total*pmax(0.2, abs(2*vjust_dir-1)))) > 1)
-  
-  # ((Montant / a) / 2*pmax(0.2, abs(2*vjust_dir-1)))
-  # (Montant / (a*2*pmax(0.2, abs(2*vjust_dir-1))))
-  # 
-  # (48648/5464)/65484
-  # 48648/(5464*65484)
-  # print('ICI_1')
-  # 
   
   echelle <- quel_periode(df_resume_periode$Label_periode)
   
@@ -310,7 +278,8 @@ Ti_BonbonMiel <- function(df_resume_periode, list_col, sens = 'Debit'){
     scale_fill_manual(values = list_col) +
     
     # total € au milieu
-    geom_text(aes(label = str_extract(Label_periode, '\\d+ €$')),
+    geom_text(data = distinct(df_bbm_periode, Label_periode, periode, .keep_all = TRUE),
+              aes(label = str_extract(Label_periode, '\\d+ €$')),
               x = 0, y = 0) +#, size = 10, size.unit = 'pt')+ # size = ifelse(N_col>10, 7, 11)
     guides(fill = 'none') +
     
@@ -377,17 +346,18 @@ Fesses <- function(df_resume_periode, list_col, sens = 'Debit'){
                              'janv. févr. mars', 'avr. mai juin', 'juil. août sept.', 'oct. nov. déc.', # tous les trimestres
                              'janvier à juin', 'juiller à décembre' # semestres
   )
-  
+   
   
   df_bbm_periode <- df_resume_periode %>%
+    filter(Montant != 0) %>%
     # mutate(Montant = abs(Montant)) %>%
     group_by(periode) %>%
     arrange(Classe) %>% # les Classes sont des facteurs ordonnées selon le cout total de leurs Super_Classes respectives
-    mutate(Classe_label = paste(Classe,'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
+    mutate(Classe_label = paste(str_remove(Classe, '.'),'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
            Classe_periode = paste0(Classe,'/',periode)) %>%      # utilisé pour identifier les zones
     
     group_by(Super_Classe, periode) %>%
-    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
+    mutate(Super_Classe_label = paste(str_remove(Super_Classe, '.'),'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
            Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%           # utilisé pour identifier les zones
     mutate(an = format(periode, '%Y'),
            periode_an = str_trim(str_extract(Label_periode, '^.{3,4}\\D+')), # on isole la premiere partie du Label, avant l'année
@@ -411,11 +381,11 @@ Fesses <- function(df_resume_periode, list_col, sens = 'Debit'){
   df_bbm_periode2 <- df_bbm_periode %>%
     # filter(periode %in% c('2024-02-15', '2024-08-15')) %>%
     group_by(periode) %>%
-    summarize(somme_periode = max(sum(pmax(0,Montant)), sum(pmax(0, -Montant)))) %>%
+    summarize(somme_periode = max(sum(pmax(0,Montant)), sum(pmax(0, -Montant)))) %>% # à chaque période, le plus grand des recettes ou des déppenses remplira totalement son cadrant. On calcul ici la plus grande des deux valeurs
     inner_join(df_bbm_periode, by = join_by(periode)) %>%
     mutate(part_de_periode = Montant/somme_periode)%>%
     group_by(periode, sens = Montant>0) %>%
-    arrange(periode, Classe)  %>%
+    arrange(periode, sens, is.na(Classe), Classe)  %>%
     mutate(som_cu = cumsum(part_de_periode)) %>%
     ungroup()
   
@@ -467,7 +437,7 @@ Fesses <- function(df_resume_periode, list_col, sens = 'Debit'){
   
   # tout
   test <- bind_rows(test_trame, test_bords1, test_bords2) %>%
-    inner_join(XY)
+    inner_join(XY, by = join_by(X))
   
   
   
@@ -494,7 +464,8 @@ Fesses <- function(df_resume_periode, list_col, sens = 'Debit'){
     ylim(c(0, 1.05)) +
     xlim(c(0,2)) +
     # total € au milieu
-    geom_text(aes(label = paste0(ifelse(sens, 'Recettes\n', 'Dépenses\n'), str_extract(Label_periode, '\\d+ €$')), 
+    geom_text(data = distinct(test, Label_periode, periode, .keep_all = TRUE),
+              aes(label = paste0(ifelse(sens, 'Recettes\n', 'Dépenses\n'), str_extract(Label_periode, '\\d+ €$')), 
                   x = ifelse(sens, 1.5,0.5),
                   hjust =as.numeric(sens)),
               y = 0.05, , size = 7, size.unit = 'pt') + # size = ifelse(N_col>10, 7, 11)
@@ -507,8 +478,7 @@ Fesses <- function(df_resume_periode, list_col, sens = 'Debit'){
   } else {
     myplot <- myplot + facet_grid(paste(an, '\n')~periode_an) 
   }
-  myplot
-  
+
   interactive_plot <- girafe(ggobj = myplot,
                              bg = "transparent",
                              height_svg = N_lig * 2,
@@ -548,11 +518,11 @@ histogramme_periode <- function(df_resume_periode, list_col, sens= 'Debit'){
     mutate(Montant = abs(Montant)) %>%
     group_by(periode) %>%
     arrange(Classe) %>% # les Classes sont des facteurs ordonnées selon le cout total de leurs Super_Classes respectives
-    mutate(Classe_label = paste(Classe,'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
+    mutate(Classe_label = paste(str_remove(Classe, '.'),'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
            Classe_periode = paste0(Classe,'/',periode)) %>%      # utilisé pour identifier les zones
     
     group_by(Super_Classe, periode) %>%
-    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
+    mutate(Super_Classe_label = paste(str_remove(Super_Classe, '.'),'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
            Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%           # utilisé pour identifier les zones
     mutate(an = format(periode, '%Y'),
            periode_an = str_trim(str_extract(Label_periode, '^.{4}\\D+')), # on isole la premiere partie du Label, avant l'année
@@ -623,12 +593,12 @@ histogramme_Classe <- function(df_resume_periode, list_col, sens = 'Debit'){
     
     group_by(Label_periode) %>%
     arrange(sC_C) %>%
-    mutate(Classe_label = paste(Label_periode, sC_C,'\n', round(Montant), '€'),
-           Classe_periode = paste0(Classe,'/',periode)) %>%
+    mutate(Classe_label = paste(str_remove(Classe, '.'),'\n', round(Montant), '€'), # utilisé quand on passe la souris sur une zone
+           Classe_periode = paste0(Classe,'/',periode)) %>%      # utilisé pour identifier les zones
     
     group_by(Super_Classe, periode) %>%
-    mutate(Super_Classe_label = paste(Super_Classe,'\n', round(sum(Montant)), '€'),
-           Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%
+    mutate(Super_Classe_label = paste(str_remove(Super_Classe, '.'),'\n', round(sum(Montant)), '€'), # utilisé quand on passe la souris sur une marge
+           Super_Classe_periode = paste0(Super_Classe,'/',periode)) %>%           # utilisé pour identifier les zones
     mutate(an = str_extract(Label_periode, '\\d{4}'),
            periode_an = str_trim(str_extract(Label_periode, '^\\D+')),
            periode_an = factor(periode_an, c('janv. févr. mars', 'avr. mai juin', 'juil. août sept.', 'oct. nov. déc.')) ) %>%

@@ -271,13 +271,26 @@ ui <- navbarPage(
     
     # ~~~~{    en-tête : options    }~~~~
     fluidRow(
-      column(2),
+      column(1),
       
-      column(2,
+      column(1,
+             
+             switchInput(
+               inputId = 'ShowTransferts',
+               label = 'Afficher les transferts',
+               value = FALSE,
+               onLabel = "OUI",
+               offLabel = "NON",
+               size = 'small'
+             )
+      ),
+      
+      column(3,
              sliderTextInput(inputId = "periode_subset",
                              label = "Période visualisée",
                              choices = letters, 
-                             selected = c('a','z')
+                             selected = c('a','z'),
+                             force_edges = TRUE
              )
              
              
@@ -302,17 +315,17 @@ ui <- navbarPage(
              )
       ),
       
-      column(4,
+      column(3,
              selectInput(
                inputId = 'typeGraph',
                label = 'Type de graphique',
                choices = list(#'résumé en un seul gros bonbon miel'='Gro_BonbonMiel',
                  'Vérification des données'='Verification_donnees',
+                 'comparaison Fesse à Fesse'='Fesses',
                  'un bonbon miel par periode'='Ti_BonbonMiel',
                  'histogramme par periode'='histogramme_periode',
                  'histogramme comparaison par Classe'='histogramme_Classe',
                  'comparaison des dépenses et recettes'='histogramme_Fasse_a_Fasse',
-                 'comparaison Fesse à Fesse'='Fesses',
                  'courbes empilés (in proogress)'='Courbe_empile_giraph')
              )
       ), 

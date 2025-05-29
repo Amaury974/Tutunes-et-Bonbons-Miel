@@ -117,7 +117,7 @@ fun_classif <- function(releve, df_classif){
   
   
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
-  #####                           Amortis                      #####
+  #####                           Amortis                          #####
   #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
   
   df_a_amortir <- filter(df_identifie2, !is.na(amorti_mois)) %>%
@@ -155,10 +155,44 @@ fun_classif <- function(releve, df_classif){
   df_identifie2 <- filter(df_identifie2, is.na(amorti_mois)) %>%
     bind_rows(df_amorti)
   
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  #####                       Auto Transferts                      #####
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  
+  Auto_Transf <- filter(df_identifie2, is.na(Classe), Montant >= 100) %>%
+    select(Date, Montant_plus = Montant) %>%
+    left_join(df_identifie2, by = join_by(Date)) %>%
+    filter(Montant == -Montant_plus) %>%
+    select(Date, Montant) %>%
+    mutate(auto_transfert = TRUE)
+  
+  Auto_Transf <- Auto_Transf %>%
+    mutate(Montant = - Montant) %>%
+    bind_rows(Auto_Transf)
+    
+  df_identifie2 <- df_identifie2 %>%
+    left_join(Auto_Transf, by = join_by(Date, Montant)) %>%
+    mutate(Super_Classe = if_else(!is.na(auto_transfert), 'Transferts', Super_Classe),
+           Classe = if_else(!is.na(auto_transfert), 'auto', Classe))
+  
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  #####                             NA                             #####
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  
+  df_identifie2[df_identifie2$Montant > 0 & is.na(df_identifie2$Classe), 'Super_Classe'] <- 'NA'
+  df_identifie2[df_identifie2$Montant > 0 & is.na(df_identifie2$Classe), 'Classe'] <- 'non attribue'
+  df_identifie2[df_identifie2$Montant < 0 & is.na(df_identifie2$Classe), 'Super_Classe'] <- 'NA'
+  df_identifie2[df_identifie2$Montant < 0 & is.na(df_identifie2$Classe),  'Classe'] <- 'non attribue'
+  
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  #####                            sens                            #####
+  #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
+  
+  df_identifie2$Super_Classe <- with(df_identifie2, str_c(ifelse(Montant>0, 'R', 'D'), Super_Classe))
   
   # print(124)
   df_identifie2 %>%
-    mutate(Classe = str_c(Super_Classe, Classe, sep = '_')) %>%
+    mutate(Classe = str_c(Super_Classe, Classe, sep = ' : ')) %>%   ### ICI <---
     select('Date', 'libelle', 'Montant', 'Compte', 'Marqueur', 'Classe', 'Super_Classe')
   
 }
@@ -174,14 +208,15 @@ f_classif <- function(releve, df_classif, Nv_ligne, type_Maj_Classe){
   }
   
   if(type_Maj_Classe == 'Plus_ligne'){
-    df_identifie <- filter(releve, is.na(Classe)) %>%
-    fun_classif(Nv_ligne) %>%
-    bind_rows(filter(releve, !is.na(Classe)))
+    # df_identifie <- filter(releve, is.na(Classe)) %>%
+    df_identifie <- filter(releve, Super_Classe %in% c('RNA', 'DNA')) %>%
+      fun_classif(Nv_ligne) %>%
+      bind_rows(filter(releve, !Super_Classe %in% c('RNA', 'DNA')))
   }
   
   df_identifie
   
-  }
+}
 
 
 

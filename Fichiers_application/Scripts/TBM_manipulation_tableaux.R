@@ -19,11 +19,12 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
   
   # print(df_identifie)
   # les transferts d'argent sont ignoré pour l'instant
-  df_identifie2 <- filter(df_identifie, (Super_Classe != 'Transferts' | is.na(Super_Classe)))
+  # df_identifie2 <- filter(df_identifie, (Super_Classe != 'Transferts' | is.na(Super_Classe)))
+
   # %>%
   #   mutate(Classe = str_c(Super_Classe, '_', Classe))
   
-  resume_periode <- df_identifie2 %>%
+  resume_periode <- df_identifie %>%
     mutate(periode = periodifier(Date, echelle, 'Date')) %>%
     group_by(Super_Classe, Classe, periode) %>%
     summarise(Montant = sum(Montant, na.rm = TRUE)) %>%
@@ -32,15 +33,14 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
   # ~~~~{    Toutes les Classes représentées tous les periodes    }~~~~
   resume_periode <- expand.grid(Classe = unique(resume_periode$Classe),
                                 periode = unique(resume_periode$periode)) %>%
-    mutate(Super_Classe = str_extract(Classe, '^[^_]+'),
+    mutate(Super_Classe = str_extract(Classe, '^[^ :]+'),
            Montant = 0) %>%
     bind_rows(resume_periode) %>%
     arrange(desc(abs(Montant))) %>%
     distinct(Classe, periode, .keep_all = TRUE) %>%
     mutate(Direction = if_else(Montant > 0, 'Credit', 'Debit'))
   
-  
-  
+
   
   # ~~~~{    Mise en forme noms periodes    }~~~~
   
@@ -69,20 +69,23 @@ f_resume <- function(df_identifie, echelle = 'Semestre'){
     summarize(ordre_inf = -sum(abs(Montant), na.rm = TRUE)/sd(Montant/mean(Montant))) %>%
     ungroup() %>%
     left_join(ordre_resume_sup, by = join_by(Super_Classe)) %>%
-    left_join(resume_periode, by = join_by(Super_Classe, Classe)) %>%  # + Montant, periodes
-    arrange(ordre_sup, ordre_inf) %>% #distinct(Super_Classe, Classe, ordre_inf, ordre_sup)
+    left_join(resume_periode, by = join_by(Super_Classe, Classe)) %>%
+    arrange(Super_Classe %in% c('RNA', 'DNA'),
+            Super_Classe %in% c('RTransferts', 'DTransferts'),
+            ordre_sup, ordre_inf) %>%
     mutate(Super_Classe = factor(Super_Classe, unique(Super_Classe)),
-           # Classe = str_extract(Classe,'[^_]+$'), # on retire la super Classe de la Classe
            Classe = factor(Classe, unique(Classe))) %>%
     select(Super_Classe, Classe, periode, Montant, Label_periode)
-
+  
+  # levels(df_resume_periode$Super_Classe)
+  
   # # ~~~~{    Ménage    }~~~~
   # rm(list = c('ordre_resume_sup', 'resume_periode'))
-  
+  df_resume_periode
 }
 
 
-
+# palette_1 <- c("#1B9E77" "#D95F02" "#7570B3" "#E7298A" "#66A61E" "#E6AB02" "#A6761D",'#1849ce','#d32913', '#09efae')
 
 #  ¤¤¤¤¤¤¤¤¤¤                     ¤¤                     ¤¤¤¤¤¤¤¤¤¤  #
 #####                          Couleurs                          #####
@@ -91,8 +94,8 @@ f_couleurs <- function(df_resume_periode){
   list_col1 <- 
     filter(df_resume_periode, Montant <0)%>%
     f_couleurs_part(Palette='Dark2')
-
-    list_col2 <- 
+  
+  list_col2 <- 
     filter(df_resume_periode, Montant >0) %>%
     f_couleurs_part(Palette='Set1')
   
@@ -104,17 +107,31 @@ f_couleurs <- function(df_resume_periode){
 # df_resume_periode<-filter(df_resume_periode, Montant <0)
 
 f_couleurs_part <- function(df_resume_periode, Palette){
-  # ~~~~{    Assignation de couleurs aux super-Classes    }~~~~
-  df_sup_col <- data.frame(Super_Classe = unique(df_resume_periode$Super_Classe))
   
-  df_sup_col$Super_col <- RColorBrewer::brewer.pal(max(3,nrow(df_sup_col)), Palette)[1:nrow(df_sup_col)] # minimal value for n is 3, returning requested palette with 3 different levels
-                 # qualitative_hcl(length(unique(df_resume_periode$Super_Classe)), 
-                 #                           palette = Palette))
-
-    df_couleur <- df_resume_periode %>%
+  # ~~~~{    Assignation de couleurs aux super-Classes    }~~~~
+  df_sup_col <- data.frame(Super_Classe = unique(df_resume_periode$Super_Classe)) %>% 
+    filter(!Super_Classe %in% c('RNA', 'DNA', 'RTransferts', 'DTransferts') & !is.na(Super_Classe))
+  
+  #au cas ou il y a plus de 7 super classes, on multiplie les couleurs
+  Col_Palette <- RColorBrewer::brewer.pal(7, Palette)
+  if(nrow(df_sup_col) %% 7 == 0) Col_Palette <- Col_Palette[1:6] # pour éviter de commencer et de finir par lma même couleur. Ce qui serait domage et confusant pour le bonbon miel
+  
+  Col_Palette <- rep(Col_Palette, 3)
+  
+  df_sup_col$Super_col <- Col_Palette[1:nrow(df_sup_col)] # minimal value for n is 3, returning requested palette with 3 different levels
+  
+  df_sup_col <- data.frame(Super_Classe = c('RNA', 'DNA', 'RTransferts', 'DTransferts'),
+                           Super_col = c(rep('grey50',2), rep('grey',2))) %>%
+    bind_rows(df_sup_col)
+  
+  # df_sup_col$Super_col <- RColorBrewer::brewer.pal(max(3,nrow(df_sup_col)), Palette)[1:nrow(df_sup_col)] # minimal value for n is 3, returning requested palette with 3 different levels
+  # qualitative_hcl(length(unique(df_resume_periode$Super_Classe)), 
+  #                           palette = Palette))
+  
+  df_couleur <- df_resume_periode %>%
     distinct(Super_Classe, Classe) %>%
     # distinct() %>%
-    left_join(df_sup_col, by = join_by(Super_Classe)) 
+    inner_join(df_sup_col, by = join_by(Super_Classe)) 
   
   
   # ~~~~{    Variations de la couleur par "sous" Classe    }~~~~
@@ -129,8 +146,8 @@ f_couleurs_part <- function(df_resume_periode, Palette){
   
   df_couleur$col <- NA
   # i=unique(ordre_resume_col$Super_col)[1]
-  for(i in unique(df_couleur$Super_col))
-    df_couleur[df_couleur$Super_col == i, 'col'] <- col_dev(i, nrow(df_couleur[df_couleur$Super_col == i,])) 
+  for(i in unique(df_couleur$Super_Classe))
+    df_couleur[df_couleur$Super_Classe == i, 'col'] <- col_dev(unique(df_couleur[df_couleur$Super_Classe == i,'Super_col']), nrow(df_couleur[df_couleur$Super_Classe == i,])) 
   
   df_couleur <- as.data.frame(select(df_couleur, Classe, col))
   
@@ -144,19 +161,19 @@ f_couleurs_part <- function(df_resume_periode, Palette){
   
   for(i in 1:nrow(df_couleur))
     list_col[[as.character(df_couleur[i,'Classe'])]] <- df_couleur[i,'col']
-    # list_col[[paste(df_couleur[i,'Super_Classe'], df_couleur[i,'Classe'])]] <- df_couleur[i,'col']
+  # list_col[[paste(df_couleur[i,'Super_Classe'], df_couleur[i,'Classe'])]] <- df_couleur[i,'col']
   
   # unique(df_couleur$Classe)
   
   # ~~~~{    test    }~~~~
-  df_resume_periode %>%
-    distinct(Super_Classe, Classe) %>%
-    ggplot() +
-    geom_bar(aes(x=Classe, fill = Classe), y=1) +
-    geom_bar(aes(x=Classe, fill = Super_Classe, y=0.3),stat = 'identity', color = 'black')+
-    scale_fill_manual(values = list_col) +
-    guides(fill='none') +
-    theme(axis.text.x = element_text(angle = (330), hjust=0))
+  # df_resume_periode %>%
+  #   distinct(Super_Classe, Classe) %>%
+  #   ggplot() +
+  #   geom_bar(aes(x=Classe, fill = Classe), y=1) +
+  #   geom_bar(aes(x=Classe, fill = Super_Classe, y=0.3),stat = 'identity', color = 'black')+
+  #   scale_fill_manual(values = list_col) +
+  #   guides(fill='none') +
+  #   theme(axis.text.x = element_text(angle = (330), hjust=0))
   
   # # ~~~~{    Ménage    }~~~~
   # rm(list = c('df_couleur', 'col_dev', 'df_sup_col'))
@@ -215,10 +232,5 @@ Periode_defaut <- function(df_resume_periode, df_identifie){
   as.character(c(first(Periode_out), last(Periode_out)))
   
 }
-
-
-
-
-
 
 

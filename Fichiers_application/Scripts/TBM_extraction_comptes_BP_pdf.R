@@ -16,7 +16,7 @@
 # library(pdftools)
 # library(stringr)
 # library(dplyr)
-
+# dir_PDF=dir
 
 # dir_PDF <- "./releve_CCP2006014Y038_20240812.pdf"
 # dir_PDF=all_dir[37]
@@ -121,7 +121,7 @@ extraction_BP_pdf <- function(dir_PDF){
     str_remove('\\s+\\d+,\\d{2}') %>%
     str_remove_all('\\s+(?=\\s)')
   
-  PDF_3$Direction <- ifelse(str_detect(PDF_3$lib, '(VIREMENT DE)|(VIREMENT INSTANTANE DE)') , 'Credit', 'Debit')
+  PDF_3$Direction <- ifelse(str_detect(PDF_3$lib, '(VIREMENT DE)|(VIREMENT INSTANTANE DE)|(REMISE DE CHEQUES)') , 'Credit', 'Debit')
   
   # dir_PDF=all_dir[1]
   
