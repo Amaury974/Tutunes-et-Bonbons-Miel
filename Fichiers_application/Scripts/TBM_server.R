@@ -61,6 +61,7 @@ server <- function(input, output) {
     if(!inherits(test_sauvegarde, "try-error")) {
       cat('            _ Succès\n')
       print(getwd())
+      updateActionButton(inputId = 'save', icon = icon('floppy-disk', class = 'fa-regular  fa-xl'))
       cat('Emplacement du fichier de sauvegarde', dir_sauvegarde, file = 'Source/direction_sauvegarde.txt', sep = '\n')
     }
     
@@ -231,8 +232,11 @@ server <- function(input, output) {
     
     cat('>> Identification > Update des identifications _ 1\n')
     
-    # ~~~~{    On ré-identifie tout    }~~~~
+    # ~~~~{    On ré-identifie tout ou seulement ce qui n'est pas encore identifié    }~~~~
     df_identifie <- f_classif(RV$df_identifie, RV$df_classif, Nv_ligne, type_Maj_Classe)
+    
+    # bouton sauvegarde visblement actif
+    updateActionButton(inputId = 'save', icon = icon('floppy-disk', class = 'fa-regular  fa-xl'))
     
     cat('                                               _ 2\n')   
     
