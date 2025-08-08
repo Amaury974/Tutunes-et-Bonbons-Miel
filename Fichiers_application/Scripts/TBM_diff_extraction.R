@@ -59,7 +59,8 @@ f_diff_extraction <- function(dir, .dir_name=dir){
   # ~~~~{    Jointure    }~~~~
   releve <- bind_rows(releve_Poste_PDF, releve_Poste, releve_SG, releve_Fortuneo)
   
-  
+  # ~~~~{    retrait des caractères pénibles    }~~~~
+  releve$libelle <- str_replace(releve$libelle, '\\*', '_')
   
   # ~~~~{    Retrait des Doublons    }~~~~
   # compliqué parce qu'on limite les risques de supprimer deux dépense identique le même jour qui ne serraient pas des doublons
