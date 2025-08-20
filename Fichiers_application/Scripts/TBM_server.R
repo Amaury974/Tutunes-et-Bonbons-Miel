@@ -235,8 +235,8 @@ server <- function(input, output) {
     # ~~~~{    On ré-identifie tout ou seulement ce qui n'est pas encore identifié    }~~~~
     df_identifie <- f_classif(RV$df_identifie, RV$df_classif, Nv_ligne, type_Maj_Classe)
     
-    # bouton sauvegarde visblement actif
-    updateActionButton(inputId = 'save', icon = icon('floppy-disk', class = 'fa-regular  fa-xl'))
+    # bouton sauvegarde visiblement actif
+    updateActionButton(inputId = 'save', icon = icon('floppy-disk', class = 'fa-solid  fa-xl'))
     
     cat('                                               _ 2\n')   
     

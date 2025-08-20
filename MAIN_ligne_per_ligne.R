@@ -77,7 +77,7 @@ source('TBM_util.R')
 
 
 all_dir <- loca_dossier(dir_data,'\\d{7}')
-releve <- f_diff_extraction(all_dir[28:40])
+releve <- f_diff_extraction(all_dir[60:61])
 releve <- f_diff_extraction(dir = all_dir[1:5])
 releve <- f_diff_extraction(all_dir[c(1:5,30:54)])
 

@@ -19,7 +19,7 @@
 # dir_PDF=dir
 
 # dir_PDF <- "./releve_CCP2006014Y038_20240812.pdf"
-# dir_PDF=all_dir[37]
+# dir_PDF=all_dir[60]
 # dir_PDF= "D:/apis_/Documents/R/Analyse des comptes bancaire TBM/Data/Relevés/releve_CCP2006014Y038_20240112.pdf" 
 
 extraction_BP_pdf <- function(dir_PDF){
@@ -36,7 +36,7 @@ extraction_BP_pdf <- function(dir_PDF){
   
   
   # str_extract(PDF_1[1], '(?<=Votre identifiant . )\\d+')
-  num <- str_extract(PDF_1[1], '(?<=CCP n° ).+?(?=   )')
+  num <- str_extract(PDF_1[1], '(?<=(CCP|Compte Courant Postal) n° ).+?(?=   )')
   nom <- str_extract(PDF_1[1], '(?<=(MR )|(MME )).+')
   intitule <- paste('LBP', nom, num)
   # Annee <- str_extract(dir_PDF, '(?<=_)\\d{4}(?=\\d{4})')
