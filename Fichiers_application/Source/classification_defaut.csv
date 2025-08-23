@@ -1,5 +1,4 @@
 Super_Classe;Classe;Marqueur;Date
-Autre;divers;CIUDIN;NA
 Autre;divers;ESSOMO LAUNDRY;NA
 Autre;divers;PCIE;NA
 Autre;divers;PHIE;NA
@@ -44,8 +43,6 @@ Loisir;resto;LA CASCADE GOURM;NA
 Loisir;resto;SILVER ONE;NA
 Loisir;resto;ZETTLE__RECUP ET;NA
 Loisir;resto;SUMUP  _DELIS A;NA
-Loisir;resto;A BIS;NA
-Loisir;resto;JOJO;NA
 Loisir;resto;GALERIA RESTAURA;NA
 Loisir;resto;513102 ID TRATTO;NA
 Loisir;resto;O DIVIN PLAISIR;NA
@@ -66,11 +63,7 @@ Loisir;activite;MAISON FOLIO;NA
 Loisir;activite;DOMAINE DU CAFE;NA
 Loisir;activite;BILLETTERIE WEB;NA
 Loisir;activite;PLEIN CHAMP;NA
-Loisir;activite;SUMUP _PAYET;NA
-Lieu;demenag.;DOSSIER 244049;NA
-Lieu;demenag.;VIR INST JORANT BACKENSTRASS OUT;NA
 Lieu;demenag.;ECOCARTON;NA
-Lieu;demenag.;VILLE DE LYON;NA
 Lieu;demenag.;SIXT;NA
 Lieu;deplac.;SNCF;NA
 Lieu;deplac.;TRANSDEV;NA
@@ -95,7 +88,6 @@ Lieu;amenag.;CONFORAMA;NA
 Lieu;amenag.;IKEA;NA
 Lieu;amenag.;FERMES ET JARDIN;NA
 Lieu;amenag.;FERMES_JARDINS;NA
-Lieu;amenag.;LBD;NA
 Lieu;amenag.;BANIAN TISSUS;NA
 Lieu;amenag.;LA DROGUERIE;NA
 Lieu;amenag.;S CENTER;NA
