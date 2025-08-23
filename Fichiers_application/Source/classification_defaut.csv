@@ -1,142 +1,63 @@
 Super_Classe;Classe;Marqueur;Date
-Autre;divers;ESSOMO LAUNDRY;NA
 Autre;divers;PCIE;NA
 Autre;divers;PHIE;NA
 Autre;divers;CAUTION;NA
-Autre;divers;LAURA CAPONY;NA
-Autre;divers;TIMBRE FISCAL;NA
-Retraits;especes;RET DAB;NA
-Retraits;especes;RETRAIT;NA
-Retraits;cheques;CHQ;NA
+Autre;divers;AMENDE.GOU;NA
+Autre;divers;FRAIS IRREGULARITES ET INCIDENTS;NA
+Autre;divers;AMENDE TCA TPV;NA
+Deplac.;avion;AVION;NA
+Deplac.;avion;CORSAIR;NA
+Deplac.;transp. commun;SNCF;NA
+Deplac.;transp. commun;TRANSDEV;NA
+Deplac.;transp. commun;KEOLIS;NA
+Deplac.;transp. commun;RATP;NA
+Deplac.;transp. commun;ACHAT CB TCL£CUMUL;NA
+Deplac.;transp. commun;ACHAT CB £CUMUL;NA
+Deplac.;transp. commun;FLIXBUS.COM;NA
+Deplac.;transp. commun;BLABLACAR;NA
+Deplac.;transp. commun;S.L.T.C.;NA
+Deplac.;transp. commun;GARE ORLY;NA
+Deplac.;transp. commun;SPL MOBILITES;NA
+Deplac.;vroum vroum;ADA LOCATIONS;NA
+Deplac.;vroum vroum;VITO;NA
+Deplac.;vroum vroum;ACHAT CB ALLOPNEUS;NA
+Deplac.;vroum vroum;GARAGE ML AUTO;NA
+Deplac.;vroum vroum;1/AUCHAN CAR;NA
 Fixes;abonn.;EDF;NA
 Fixes;abonn.;PRLV;NA
 Fixes;abonn.;COTISATION TRIMESTRIELLE;NA
 Fixes;loyer;LOYER;NA
-Fixes;loyer;REGIE TARGE;NA
-Loisir;resto;IGLOO;NA
-Loisir;resto;SAPNA;NA
-Loisir;resto;LE CAUDAN;NA
-Loisir;resto;SO THAI;NA
-Loisir;resto;ROYAL FOOD TRADI;NA
-Loisir;resto;MJC MONPLAISIR;NA
-Loisir;resto;FEUILLETTE;NA
-Loisir;resto;PAUL;NA
-Loisir;resto;ZOI KITCHEN;NA
-Loisir;resto;HOUSE PIZZA;NA
-Loisir;resto;LA CARDINALE;NA
-Loisir;resto;SNACK;NA
-Loisir;resto;LYBEYROUTH;NA
-Loisir;resto;LE CAFE POTAGER;NA
-Loisir;resto;RESTAURANT;NA
-Loisir;resto;LA CASCADE GROURM;NA
-Loisir;resto;LE PETIT CREUX;NA
-Loisir;resto;MATTSAM RESTAURA;NA
-Loisir;resto;CARRE JARDIN;NA
-Loisir;resto;MAFATE C;NA
-Loisir;resto;PAPICHULO;NA
-Loisir;resto;THE MERVEILLES;NA
-Loisir;resto;CHEZ LOUNA;NA
-Loisir;resto;TERRE ADELICE;NA
-Loisir;resto;COCHI   CO;NA
-Loisir;resto;VILLA MARTHE;NA
-Loisir;resto;LA CASCADE GOURM;NA
-Loisir;resto;SILVER ONE;NA
-Loisir;resto;ZETTLE__RECUP ET;NA
-Loisir;resto;SUMUP  _DELIS A;NA
-Loisir;resto;GALERIA RESTAURA;NA
-Loisir;resto;513102 ID TRATTO;NA
-Loisir;resto;O DIVIN PLAISIR;NA
-Loisir;resto;KIWA;NA
-Loisir;resto;KOTOZAFY RANDRIA;NA
-Loisir;resto;QUEEN FR;NA
-Loisir;resto;TART'IN;NA
-Loisir;resto;LE RELAIS KREOL;NA
-Loisir;resto;BACCHUS;NA
-Loisir;resto;LE VIEUX PRESS;NA
+GMS;bio;BIOCOOP;NA
+GMS;bio;ALIMENTATION BIO;NA
+GMS;bio;NATURALIA;NA
+GMS;generaliste;E.LECLERC;NA
+GMS;generaliste;INTERMARCHE;NA
+GMS;generaliste;ALDI;NA
+GMS;generaliste;AUCHAN;NA
+GMS;generaliste;CARREFOUR;NA
+GMS;generaliste;SPAR;NA
+GMS;generaliste;MONOP;NA
+GMS;generaliste;VIVAL;NA
+GMS;generaliste;CASINO;NA
+GMS;generaliste;LECLERC;NA
+GMS;generaliste;MAGASIN U;NA
+GMS;generaliste;NETTO;NA
+GMS;specialiste;LE PALAIS DES;NA
 Loisir;activite;CAMPING;NA
 Loisir;activite;AIRBNB;NA
-Loisir;activite;KELONIA;NA
-Loisir;activite;CINEPALME;NA
-Loisir;activite;LABYRINTE CHAMP;NA
-Loisir;activite;CITE DU VOLCAN;NA
-Loisir;activite;MAISON FOLIO;NA
-Loisir;activite;DOMAINE DU CAFE;NA
 Loisir;activite;BILLETTERIE WEB;NA
 Loisir;activite;PLEIN CHAMP;NA
-Lieu;demenag.;ECOCARTON;NA
-Lieu;demenag.;SIXT;NA
-Lieu;deplac.;SNCF;NA
-Lieu;deplac.;TRANSDEV;NA
-Lieu;deplac.;TROPIC AUTO;NA
-Lieu;deplac.;ADA LOCATIONS;NA
-Lieu;deplac.;KEOLIS;NA
-Lieu;deplac.;CYCLEXPERTSLYON;NA
-Lieu;deplac.;BIKE24;NA
-Lieu;deplac.;SODIPARC;NA
-Lieu;deplac.;RATP;NA
-Lieu;deplac.;INTER LOCATION;NA
-Lieu;deplac.;VITO;NA
-Lieu;deplac.;EURL DJM SERVICE;NA
-Lieu;deplac.;OLA ENERGY;NA
-Lieu;deplac.;AVION;NA
-Lieu;deplac.;STATION ZAC;NA
-Lieu;deplac.;COOL LOCATION;NA
-Lieu;amenag.;MUJI;NA
-Lieu;amenag.;BRICORAMA;NA
-Lieu;amenag.;RAVATE;NA
-Lieu;amenag.;CONFORAMA;NA
-Lieu;amenag.;IKEA;NA
-Lieu;amenag.;FERMES ET JARDIN;NA
-Lieu;amenag.;FERMES_JARDINS;NA
-Lieu;amenag.;BANIAN TISSUS;NA
-Lieu;amenag.;LA DROGUERIE;NA
-Lieu;amenag.;S CENTER;NA
-Lieu;amenag.;LEROY MER;NA
-Lieu;amenag.;AU MONDE DES ANI;NA
-Lieu;amenag.;MATIN STE CLOTILDE;NA
-Matos;vetements;FRIP ATTITUDE;NA
-Matos;vetements;HETM043;NA
-Matos;vetements;HAV SAINT ANDRE;NA
-Matos;vetements;WWW.LOOM.FR;NA
-Matos;equip.;DECATHLON;NA
-Matos;equip.;AU VIEUX CAMPEUR;NA
-Matos;equip.;AMAZON;NA
-Matos;equip.;BLEU CERISE;NA
-Matos;equip.;MAREBAM PRIMAT;NA
-Matos;equip.;SAS AUTREMENT;NA
-Matos;cadeaux;IL ETAIT UNE FOI;NA
-Matos;cadeaux;ZETTLE__CACAO;NA
-Matos;cadeaux;COBALT;NA
-Matos;cadeaux;LA POSTE;NA
-Matos;cadeaux;CADEAU;NA
-Matos;cadeaux;PEPINIERE GROM;NA
-Matos;cadeaux;EXEMPLAIRE;NA
-Alim;bio;BIOCOOP;NA
-Alim;bio;EPI CENTRE;NA
-Alim;bio;BIOLOCO;NA
-Alim;bio;ALIMENTATION BIO;NA
-Alim;bio;NATURALIA;NA
-Alim;bio;LA PTITE DISTRIB;NA
-Alim;bio;BIO;NA
-Alim;general;E.LECLERC;NA
-Alim;general;ELSA BOULANGER;NA
-Alim;general;INTERMARCHE;NA
-Alim;general;ALDI;NA
-Alim;general;AUCHAN;NA
-Alim;general;CARREFOUR;NA
-Alim;general;RUN MARKET;NA
-Alim;general;SPAR;NA
-Alim;general;MONOP;NA
-Alim;general;ASIA STORE;NA
-Alim;general;L'ALIZEE;NA
-Alim;general;LARBRE A PAINS;NA
-Alim;general;LA CASE A PAINS;NA
-Alim;general;VIVAL;NA
-Alim;general;CASINO;NA
-Alim;general;SAS SEMOI;NA
-Alim;general;DISCASH;NA
-Alim;general;SARL MIAMAX;NA
-Alim;general;PROVANILLE;NA
-Alim;general;DISTR VENISSIEUX;NA
-Alim;general;ARMANNI NADEGE;NA
-Alim;general;AROMA-ZONE;NA
+Loisir;activite;ACHAT CB FONDACIO FRANC;NA
+Loisir;activite;AUBERGE JEUNES ;NA
+Loisir;activite;PATHE;NA
+Loisir;sport;DECATHLON;NA
+Loisir;sport;AU VIEUX CAMPEUR;NA
+Maison;fourniture;MUJI;NA
+Maison;fourniture;BRICORAMA;NA
+Maison;fourniture;CONFORAMA;NA
+Maison;fourniture;IKEA;NA
+Maison;fourniture;DARTY;NA
+Retraits;cheques;CHQ;NA
+Retraits;cheques;CHEQUE;NA
+Retraits;especes;RET DAB;NA
+Retraits;especes;RETRAIT;NA
