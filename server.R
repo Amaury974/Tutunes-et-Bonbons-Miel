@@ -28,14 +28,13 @@ server <- function(input, output) {
   
   # print(list.files(dir_sauvegarde))
   if(!inherits(RDS_files, "try-error")) {
-    cat('>> Initialisation > chargement sauvegarde\n')
-    cat('                    depuis :', dir_sauvegarde, '\n')
-    cat('                            ', paste(names(RDS_files), collapse = '                            \n'), '\n')
+    cat('                         _ depuis :', dir_sauvegarde, '\n')
+    cat('                            ', paste(names(RDS_files), collapse = '\n                            '), '\n')
     # load('save.RData')
     # RDS_files <- readRDS('save.RDS')
     for(i in names(RDS_files))
       RV[[i]] <- RDS_files[[i]]
-  }
+  } else cat('                         _ échec\n')
   
   cat('                         _ fin\n\n')
   
@@ -95,7 +94,6 @@ server <- function(input, output) {
       # RV$list_col <- list_col
       
       cat('                         _ fin\n\n')
-      
       
     })
   
@@ -232,6 +230,8 @@ server <- function(input, output) {
     
     cat('>> Identification > Update des identifications _ 1\n')
     
+    if(!is.null(RV$df_identifie)){
+      
     # ~~~~{    On ré-identifie tout ou seulement ce qui n'est pas encore identifié    }~~~~
     df_identifie <- f_classif(RV$df_identifie, RV$df_classif, Nv_ligne, type_Maj_Classe)
     
@@ -245,7 +245,7 @@ server <- function(input, output) {
     
     RV$df_identifie <- df_identifie
     
-    
+    } else cat('                                               _ échec\n')
     
     cat('                                               _ fin\n\n')   
     
@@ -377,8 +377,8 @@ server <- function(input, output) {
     tab <- NULL
     
     if(!is.null(RV$df_identifie)){
-       tab <- filter(RV$df_identifie, if(!input$ShowTransferts) !Super_Classe %in% c('RTransferts', 'DTransferts') else TRUE) %>%
-         f_resume(input$echelle)
+      tab <- filter(RV$df_identifie, if(!input$ShowTransferts) !Super_Classe %in% c('RTransferts', 'DTransferts') else TRUE) %>%
+        f_resume(input$echelle)
     }
     cat('                                  _ 2\n')
     
