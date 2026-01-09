@@ -18,7 +18,7 @@ f_diff_extraction <- function(dir, .dir_name=dir){
   # print(.dir_name)
   
   # ~~~~{    releve PDF Banque Postale    }~~~~
-  print('PDF_BP')
+  print('Banque Postale pdf')
   # i=5
   releve_Poste_PDF <- data.frame()
   for(i in which(str_detect(.dir_name, 'releve.+pdf$'))){
@@ -28,7 +28,7 @@ f_diff_extraction <- function(dir, .dir_name=dir){
   
   
   # ~~~~{    Banque postale csv    }~~~~
-  print('BP')
+  print('Banque postale csv')
   # ex : '0456399A0381730071860072.csv'
   releve_Poste <- data.frame()
   # for(dir_i in filter(input_data, type == 'text/csv')$datapath){
@@ -38,7 +38,7 @@ f_diff_extraction <- function(dir, .dir_name=dir){
   }
   
   # ~~~~{    Societe Generale    }~~~~
-  print('SG')
+  print('Societe Generale')
   # ex : '00056002117.csv'
   releve_SG <- data.frame()
   # for(dir_i in filter(input_data, type == 'text/csv')$datapath){
@@ -56,8 +56,25 @@ f_diff_extraction <- function(dir, .dir_name=dir){
     releve_Fortuneo <- bind_rows(releve_Fortuneo, extraction_Fortuneo(dir = dir[i], .force_compte = paste('Fortuneo', str_extract(.dir_name[i], '\\d+'))))
   }
   
+  # ~~~~{    Revolut    }~~~~
+  # account-statement_2025-01-01_2025-02-28_fr-fr_1c5df2
+  print('Revolut')
+  releve_Revolut <- data.frame()
+  # for(dir_i in filter(input_data, type == 'text/csv')$datapath){
+  for(i in which(str_detect(.dir_name, 'account-statement.+csv$'))){
+    print(.dir_name[i])
+    releve_Revolut <- bind_rows(releve_Revolut, extraction_Revolut(dir = dir[i]))
+  }
+  
+  
+  
+  
   # ~~~~{    Jointure    }~~~~
-  releve <- bind_rows(releve_Poste_PDF, releve_Poste, releve_SG, releve_Fortuneo)
+  releve <- bind_rows(releve_Poste_PDF,
+                      releve_Poste,
+                      releve_SG,
+                      releve_Fortuneo,
+                      releve_Revolut)
   
   # ~~~~{    retrait des caractères pénibles    }~~~~
   releve$libelle <- str_replace(releve$libelle, '\\*', '_')
