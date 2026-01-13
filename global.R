@@ -15,8 +15,6 @@
 # ~~~~{    chargement des packages    }~~~~
 cat('\n>> GLOBAL > Installation des packages \n')
 
-library(methods) # non chargé en execution ligne de commande avec RScript alors qu'il l'est pas défaut R. Potentiel résoltion d'un problème de chargement des packages
-
 needed_packages <- c(#'Rtools', # utilisé par certains packages
   'dplyr', # manipulation de données / tableaux
   'stringr', # manipulation de chaines de caractères
@@ -33,13 +31,16 @@ needed_packages <- c(#'Rtools', # utilisé par certains packages
 )
 
 
-install.packages(setdiff(needed_packages, rownames(installed.packages())))
+# install.packages(setdiff(needed_packages, .packages(all = TRUE)),repos = 'https://cloud.r-project.org/')))
 
-cat('\n>> GLOBAL > chargement des packages \n')
 
-for(pack_i in needed_packages)
-  require(pack_i, character.only = TRUE, quietly = TRUE, warn.conflicts = FALSE)
-
+for(pack_i in needed_packages){
+  cat('              ',pack_i,'\n')
+  if(!require(pack_i, character.only = TRUE, quietly = TRUE, warn.conflicts = FALSE)){
+    install.packages(pack_i, repos = 'https://cloud.r-project.org/')
+    require(pack_i, character.only = TRUE, quietly = TRUE, warn.conflicts = FALSE)
+  }
+}
 
 # ~~~~{    options des packages    }~~~~
 cat('\n>> GLOBAL > options des packages \n')
